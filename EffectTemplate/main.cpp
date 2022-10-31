@@ -18,7 +18,7 @@
 =================================*/
 
 /******** ウィンドウ名の指定 **********/
-const char kWindowTitle[] = "LC1A_16_トヨダユウキ_AL2_0_0_課題";
+const char kWindowTitle[] = "エフェクト";
 
 /******** ウィンドウサイズの指定 **********/
 const int kWinodowWidth = 1280; //x

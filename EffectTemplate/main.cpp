@@ -49,7 +49,7 @@ struct Effect {
 	float acceleration;
 	float theta;
 	int elapseFrame;
-	bool start;
+	bool init;
 	bool isEnd;
 };
 
@@ -64,7 +64,38 @@ struct Effect {
 /******** エフェクト更新処理 **********/
 void EffectUpdate(Effect& effect) {
 
-	
+	if (effect.init == true) {
+
+		//エフェクトの位置、速度、サイズ初期化
+		effect.position = { 640.0f, 360.0f };
+		effect.velocity = { My::RandomF(5.0f, 7.0f, 1), My::RandomF(5.0f, 7.0f, 1) };
+		effect.size = { 5, 5 };
+
+		//エフェクトが向かう方向をランダムにする
+		effect.theta = My::Random(0, 180);
+		effect.theta = effect.theta * (M_PI / 180.0f);
+
+		//エフェクト表示
+		effect.isEnd = false;
+
+		//初期化フラグfalse
+		effect.init = false;
+
+	}
+
+	if (effect.elapseFrame >= 100) {
+
+		effect.isEnd = true;
+
+		effect.elapseFrame = 0;
+
+	}
+
+	if (effect.isEnd == false) {
+
+
+
+	}
 
 }
 

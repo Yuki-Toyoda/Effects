@@ -1,5 +1,8 @@
 ﻿#include <Novice.h>
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 #include <MyFunc.h>
 #include <Vector2D.h>
 
@@ -32,7 +35,23 @@ const int kWindowHeight = 720; //y
 	構造体宣言ここから
 *********************************/
 
-
+/******** エフェクト **********/
+//position ... x, y座標
+//size ... 矩形のサイズ
+//velocity ... 動く速度
+//回転角
+//elapseFrame ... 存在時間
+//isEnd ... エフェクトが終了しているか
+struct Effect {
+	Vector2D position;
+	Vector2D size;
+	Vector2D velocity;
+	float acceleration;
+	float theta;
+	int elapseFrame;
+	bool start;
+	bool isEnd;
+};
 
 /*********************************
 	構造体宣言ここまで
@@ -42,7 +61,12 @@ const int kWindowHeight = 720; //y
 	関数宣言ここから
 *********************************/
 
+/******** エフェクト更新処理 **********/
+void EffectUpdate(Effect& effect) {
 
+	
+
+}
 
 /*********************************
 	関数宣言ここまで
@@ -62,8 +86,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		変数宣言ここから
 	*********************************/
 
-	
+	//矩形用テクスチャ読み込み
+	int sampleTexture = Novice::LoadTexture("white1x1.png");
 
+	/******** エフェクト関係 **********/
+	//表示可能エフェクト数
+	const int maxEffects = 30;
+
+	//エフェクト
+	Effect effect[maxEffects];
+	for (int i = 0; i < maxEffects; i++) {
+		effect[i] = {
+			{640.0f, 360.0f},
+			{16.0f, 16.0f},
+			{1.0f, 1.0f},
+			0.15f,
+			0.0f,
+			0,
+			false,
+			true
+		};
+	}
 	/*********************************
 		変数宣言ここまで
 	*********************************/
@@ -88,7 +131,30 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/*********************************
 			描画処理ここから
 		*********************************/
+		/******** エフェクト描画 **********/
+		for (int i = 0; i < maxEffects; i++) {
+			if (!effect[i].isEnd) {
+				Novice::DrawQuad(
+					effect[i].position.x - effect[i].size.x,
+					effect[i].position.y + effect[i].size.y,
 
+					effect[i].position.x + effect[i].size.x,
+					effect[i].position.y + effect[i].size.y,
+
+					effect[i].position.x - effect[i].size.x,
+					effect[i].position.y - effect[i].size.y,
+
+					effect[i].position.x + effect[i].size.x,
+					effect[i].position.y - effect[i].size.y,
+
+					0, 0,
+					1, 1,
+
+					sampleTexture,
+					WHITE
+				);
+			}
+		}
 		/*********************************
 			描画処理ここまで
 		*********************************/

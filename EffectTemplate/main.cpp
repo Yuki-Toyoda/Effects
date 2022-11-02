@@ -62,7 +62,7 @@ struct Effect {
 *********************************/
 
 /******** エフェクト更新処理 **********/
-void EffectUpdate(Effect& effect) {
+void EffectUpdate(Effect& debrisEffect) {
 
 	
 

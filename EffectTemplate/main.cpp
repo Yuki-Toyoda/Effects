@@ -49,7 +49,7 @@ struct Effect {
 	float acceleration;
 	float theta;
 	int elapseFrame;
-	bool start;
+	bool init;
 	bool isEnd;
 };
 
@@ -64,7 +64,38 @@ struct Effect {
 /******** エフェクト更新処理 **********/
 void EffectUpdate(Effect& debrisEffect) {
 
-	
+	if (debrisEffect.init == true) {
+
+		//エフェクトの位置、速度、サイズ初期化
+		debrisEffect.position = { 640.0f, 360.0f };
+		debrisEffect.velocity = { My::RandomF(5.0f, 7.0f, 1), My::RandomF(5.0f, 7.0f, 1) };
+		debrisEffect.size = { 5, 5 };
+
+		//エフェクトが向かう方向をランダムにする
+		debrisEffect.theta = My::Random(0, 180);
+		debrisEffect.theta = debrisEffect.theta * (M_PI / 180.0f);
+
+		//エフェクト表示
+		debrisEffect.isEnd = false;
+
+		//初期化フラグfalse
+		debrisEffect.init = false;
+
+	}
+
+	if (debrisEffect.position.y >= kWindowHeight || debrisEffect.elapseFrame >= 100) {
+
+		debrisEffect.isEnd = true;
+
+		debrisEffect.elapseFrame = 0;
+
+	}
+
+	if (debrisEffect.isEnd == false) {
+
+
+
+	}
 
 }
 
@@ -98,9 +129,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	for (int i = 0; i < maxEffects; i++) {
 		effect[i] = {
 			{640.0f, 360.0f},
-			{16.0f, 16.0f},
 			{1.0f, 1.0f},
-			0.15f,
+			{1.0f, 1.0f},
+			0.8f,
 			0.0f,
 			0,
 			false,
@@ -123,6 +154,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/*********************************
 			更新処理ここから
 		*********************************/
+
+
 
 		/*********************************
 			更新処理ここまで

@@ -21,7 +21,7 @@
 =================================*/
 
 /******** ウィンドウ名の指定 **********/
-const char kWindowTitle[] = "エフェクト";
+const char kWindowTitle[] = "ブーストエフェクト";
 
 /******** ウィンドウサイズの指定 **********/
 const int kWinodowWidth = 1280; //x
@@ -48,7 +48,7 @@ struct Effect {
 	Vector2D velocity;
 	float acceleration;
 	float theta;
-	int elapseFrame;
+	float elapseFrame;
 	bool init;
 	bool isEnd;
 };
@@ -62,38 +62,45 @@ struct Effect {
 *********************************/
 
 /******** エフェクト更新処理 **********/
-void EffectUpdate(Effect& effect) {
+void BoostEffectUpdate(Effect& boostEffect) {
 
-	if (effect.init == true) {
+	if (boostEffect.init == true) {
 
 		//エフェクトの位置、速度、サイズ初期化
-		effect.position = { 640.0f, 360.0f };
-		effect.velocity = { My::RandomF(5.0f, 7.0f, 1), My::RandomF(5.0f, 7.0f, 1) };
-		effect.size = { 5, 5 };
+		boostEffect.position = { My::RandomF(635.0f, 645.0f, 1), 360.0f };
+		boostEffect.velocity = { 0, My::RandomF(0.7f, 1.5f, 1) };
+		boostEffect.acceleration = 0.01f;
+		boostEffect.size = { 10, 20 };
 
 		//エフェクトが向かう方向をランダムにする
-		effect.theta = My::Random(0, 180);
-		effect.theta = effect.theta * (M_PI / 180.0f);
+		boostEffect.theta = My::Random(0, 180);
+		boostEffect.theta = boostEffect.theta * (M_PI / 180.0f);
 
 		//エフェクト表示
-		effect.isEnd = false;
+		boostEffect.isEnd = false;
 
 		//初期化フラグfalse
-		effect.init = false;
+		boostEffect.init = false;
 
 	}
 
-	if (effect.elapseFrame >= 100) {
+	if (boostEffect.elapseFrame >= 100.0f || boostEffect.size.x <= 0) {
 
-		effect.isEnd = true;
+		boostEffect.isEnd = true;
+		boostEffect.init = true;
 
-		effect.elapseFrame = 0;
+		boostEffect.elapseFrame = 0.0f;
 
 	}
 
-	if (effect.isEnd == false) {
+	if (boostEffect.isEnd == false) {
 
+		boostEffect.position.y += boostEffect.velocity.y;
+		boostEffect.velocity.y += boostEffect.acceleration;
 
+		boostEffect.size.x -= boostEffect.velocity.y;
+
+		boostEffect.elapseFrame += 1.0f;
 
 	}
 
@@ -122,12 +129,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	/******** エフェクト関係 **********/
 	//表示可能エフェクト数
-	const int maxEffects = 30;
+	const int maxEffects = 5;
 
 	//エフェクト
-	Effect effect[maxEffects];
+	Effect boostEffect[maxEffects];
 	for (int i = 0; i < maxEffects; i++) {
-		effect[i] = {
+		boostEffect[i] = {
 			{640.0f, 360.0f},
 			{16.0f, 16.0f},
 			{1.0f, 1.0f},
@@ -155,6 +162,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			更新処理ここから
 		*********************************/
 
+		for (int i = 0; i < maxEffects; i++) {
+			if (boostEffect[i].isEnd) {
+				boostEffect[i].isEnd = false;
+			}
+		}
+
+		for (int i = 0; i < maxEffects; i++) {
+			BoostEffectUpdate(boostEffect[i]);
+		}
+
 		/*********************************
 			更新処理ここまで
 		*********************************/
@@ -164,19 +181,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		*********************************/
 		/******** エフェクト描画 **********/
 		for (int i = 0; i < maxEffects; i++) {
-			if (!effect[i].isEnd) {
+			if (!boostEffect[i].isEnd) {
 				Novice::DrawQuad(
-					effect[i].position.x - effect[i].size.x,
-					effect[i].position.y + effect[i].size.y,
+					boostEffect[i].position.x - boostEffect[i].size.x,
+					boostEffect[i].position.y + boostEffect[i].size.y,
 
-					effect[i].position.x + effect[i].size.x,
-					effect[i].position.y + effect[i].size.y,
+					boostEffect[i].position.x + boostEffect[i].size.x,
+					boostEffect[i].position.y + boostEffect[i].size.y,
 
-					effect[i].position.x - effect[i].size.x,
-					effect[i].position.y - effect[i].size.y,
+					boostEffect[i].position.x - boostEffect[i].size.x,
+					boostEffect[i].position.y - boostEffect[i].size.y,
 
-					effect[i].position.x + effect[i].size.x,
-					effect[i].position.y - effect[i].size.y,
+					boostEffect[i].position.x + boostEffect[i].size.x,
+					boostEffect[i].position.y - boostEffect[i].size.y,
 
 					0, 0,
 					1, 1,

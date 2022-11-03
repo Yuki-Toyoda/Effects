@@ -41,16 +41,29 @@ const int kWindowHeight = 720; //y
 //velocity ... 動く速度
 //回転角
 //elapseFrame ... 存在時間
+//init ... 初期化
+//play ... エフェクトをプレイするか
 //isEnd ... エフェクトが終了しているか
 struct Effect {
+	Vector2D startPosition;
 	Vector2D position;
 	Vector2D size;
 	Vector2D velocity;
+	float time;
 	float acceleration;
 	float theta;
 	float elapseFrame;
 	bool init;
+	bool play;
 	bool isEnd;
+};
+
+struct Player {
+
+	Vector2D position;
+	float radius;
+	float speed;
+
 };
 
 /*********************************
@@ -62,48 +75,43 @@ struct Effect {
 *********************************/
 
 /******** エフェクト更新処理 **********/
-void BoostEffectUpdate(Effect& boostEffect) {
-
-	if (boostEffect.init == true) {
-
+void BoostEffectUpdate(Effect& boostEffect, Player& player) {
+	if (boostEffect.init && boostEffect.play) {
 		//エフェクトの位置、速度、サイズ初期化
-		boostEffect.position = { My::RandomF(635.0f, 645.0f, 1), 360.0f };
-		boostEffect.velocity = { 0, My::RandomF(0.7f, 1.5f, 1) };
+		boostEffect.position = { My::RandomF(player.position.x - 15.0f, player.position.x + 15.0f, 1), My::RandomF(player.position.y - 15.0f, player.position.y + 15.0f, 1) };
+		boostEffect.startPosition = boostEffect.position;
+		boostEffect.velocity = { My::RandomF(-1.0f, 1.0f, 1), 2.5f };
 		boostEffect.acceleration = 0.01f;
-		boostEffect.size = { 10, 20 };
-
-		//エフェクトが向かう方向をランダムにする
-		boostEffect.theta = My::Random(0, 180);
-		boostEffect.theta = boostEffect.theta * (M_PI / 180.0f);
+		boostEffect.size = { 10.0f, 10.0f };
 
 		//エフェクト表示
 		boostEffect.isEnd = false;
 
 		//初期化フラグfalse
 		boostEffect.init = false;
-
 	}
 
-	if (boostEffect.elapseFrame >= 100.0f || boostEffect.size.x <= 0) {
+	if (boostEffect.size.x <= 0 || boostEffect.size.y <= 0) {
 
 		boostEffect.isEnd = true;
 		boostEffect.init = true;
-
 		boostEffect.elapseFrame = 0.0f;
 
 	}
 
 	if (boostEffect.isEnd == false) {
+		
+		//boostEffect.position.x = (1.0f - boostEffect.elapseFrame) * boostEffect.startPosition.x + boostEffect.elapseFrame * 640.0f;
 
-		boostEffect.position.y += boostEffect.velocity.y;
-		boostEffect.velocity.y += boostEffect.acceleration;
+		/*boostEffect.position.y += boostEffect.velocity.y;
+		boostEffect.velocity.y += boostEffect.acceleration;*/
 
-		boostEffect.size.x -= boostEffect.velocity.y;
+		boostEffect.size.x -= boostEffect.velocity.y / 12.0f;
+		boostEffect.size.y -= boostEffect.velocity.y / 12.0f;
 
-		boostEffect.elapseFrame += 1.0f;
+		boostEffect.elapseFrame += 0.025f;
 
 	}
-
 }
 
 /*********************************
@@ -126,25 +134,38 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//矩形用テクスチャ読み込み
 	int sampleTexture = Novice::LoadTexture("white1x1.png");
+	int circleTexture = Novice::LoadTexture("./circle.png");
+
+	float frame = 0.0f;
 
 	/******** エフェクト関係 **********/
 	//表示可能エフェクト数
-	const int maxEffects = 5;
+	const int maxEffects = 20;
 
 	//エフェクト
 	Effect boostEffect[maxEffects];
 	for (int i = 0; i < maxEffects; i++) {
 		boostEffect[i] = {
 			{640.0f, 360.0f},
+			{640.0f, 360.0f},
 			{16.0f, 16.0f},
 			{1.0f, 1.0f},
 			0.15f,
 			0.0f,
+			0.0f,
 			0,
+			false,
 			false,
 			true
 		};
 	}
+
+	Player player{
+		{640.0f, 360.0f},
+		30.0f,
+		5.0f
+	};
+
 	/*********************************
 		変数宣言ここまで
 	*********************************/
@@ -162,14 +183,42 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			更新処理ここから
 		*********************************/
 
+		frame += 1.0f;
+
 		for (int i = 0; i < maxEffects; i++) {
-			if (boostEffect[i].isEnd) {
-				boostEffect[i].isEnd = false;
+
+			if (keys[DIK_SPACE] && !preKeys[DIK_SPACE]) {
+				boostEffect[i].init = true;
+			}
+
+			if (keys[DIK_SPACE]) {
+				if (frame >= 3.0f) {
+					if (boostEffect[i].isEnd == true) {
+						boostEffect[i].play = true;
+						frame = 0.0f;
+					}
+				}
+			}
+			else {
+				boostEffect[i].play = false;
 			}
 		}
 
 		for (int i = 0; i < maxEffects; i++) {
-			BoostEffectUpdate(boostEffect[i]);
+			BoostEffectUpdate(boostEffect[i], player);
+		}
+
+		if (keys[DIK_W]) {
+			player.position.y -= player.speed;
+		}
+		if (keys[DIK_A]) {
+			player.position.x -= player.speed;
+		}
+		if (keys[DIK_S]) {
+			player.position.y += player.speed;
+		}
+		if (keys[DIK_D]) {
+			player.position.x += player.speed;
 		}
 
 		/*********************************
@@ -179,6 +228,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/*********************************
 			描画処理ここから
 		*********************************/
+
+		Novice::DrawEllipse(
+		
+			player.position.x,
+			player.position.y,
+			player.radius,
+			player.radius,
+			0.0f,
+			RED,
+			kFillModeSolid
+		
+		);
+
 		/******** エフェクト描画 **********/
 		for (int i = 0; i < maxEffects; i++) {
 			if (!boostEffect[i].isEnd) {
@@ -198,11 +260,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					0, 0,
 					1, 1,
 
-					sampleTexture,
-					WHITE
+					circleTexture,
+					BLACK
 				);
 			}
 		}
+		Novice::ScreenPrintf(0, 10, "frame : %4.2f", frame);
 		/*********************************
 			描画処理ここまで
 		*********************************/

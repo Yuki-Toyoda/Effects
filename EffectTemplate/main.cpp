@@ -48,7 +48,7 @@ struct Effect {
 	Vector2D velocity;
 	float acceleration;
 	float theta;
-	int elapseFrame;
+	float elapseFrame;
 	bool init;
 	bool isEnd;
 };
@@ -85,15 +85,18 @@ void EffectUpdate(Effect& effect) {
 
 	if (effect.elapseFrame >= 100) {
 
+		//エフェクト消去
 		effect.isEnd = true;
 
-		effect.elapseFrame = 0;
+		//経過フレーム初期化
+		effect.elapseFrame = 0.0f;
 
 	}
 
 	if (effect.isEnd == false) {
 
-
+		//経過フレーム加算
+		effect.elapseFrame += 1.0f;
 
 	}
 
@@ -154,6 +157,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/*********************************
 			更新処理ここから
 		*********************************/
+
+		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE]) {
+			for (int i = 0; i < maxEffects; i++) {
+				effect[i].init = true;
+			}
+		}
+
+		for (int i = 0; i < maxEffects; i++) {
+			EffectUpdate(effect[i]);
+		}
 
 		/*********************************
 			更新処理ここまで

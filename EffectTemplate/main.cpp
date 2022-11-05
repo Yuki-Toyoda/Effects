@@ -63,9 +63,17 @@ struct Effect {
 	bool isEnd;
 };
 
+/******** プレイヤー **********/
+//position ... x, y座標
+//radius ... 半径
+//theta ... 角度
+//degree ... 実角度
+//speed ... 移動速度
 struct Player {
 	Vector2D position;
 	float radius;
+	float theta;
+	float degree;
 	float speed;
 };
 /*********************************
@@ -79,24 +87,28 @@ struct Player {
 /******** エフェクト更新処理 **********/
 void EffectUpdate(Effect& absorptionEffect, Player& player) {
 
+	/******** 初期化 **********/
 	if (absorptionEffect.init == true) {
 
 		//エフェクトの位置、速度、サイズ初期化
 		absorptionEffect.position = { player.position.x, player.position.y };
 		absorptionEffect.size = { 15, 15 };
 
-		//エフェクトが向かう方向をランダムにする
-		absorptionEffect.theta = My::Random(0, 360);
+		//エフェクトを一定角度に生成
+		//角度
+		absorptionEffect.theta = My::Random(player.degree - 50.0f, player.degree + 50.0f);
 		absorptionEffect.theta = absorptionEffect.theta * (M_PI / 180.0f);
 
+		//位置
 		absorptionEffect.position.x += (cosf(absorptionEffect.theta) * 150);
-		absorptionEffect.position.y += -(sinf(absorptionEffect.theta) * 150);
-		
+		absorptionEffect.position.y += -(sinf(absorptionEffect.theta) * 150);	
 		absorptionEffect.startPosition.x = absorptionEffect.position.x;
 		absorptionEffect.startPosition.y = absorptionEffect.position.y;
 
+		//透明度
 		absorptionEffect.currentAlpha = 0xFF;
 
+		//イージング用変数をリセット
 		absorptionEffect.time = 0.0f;
 
 		//エフェクト表示
@@ -107,6 +119,7 @@ void EffectUpdate(Effect& absorptionEffect, Player& player) {
 
 	}
 
+	/******** 終了処理 **********/
 	if (absorptionEffect.elapseFrame >= 100 || absorptionEffect.time >= 1.0f || absorptionEffect.currentAlpha > 0xFF) {
 
 		//エフェクト消去
@@ -120,9 +133,10 @@ void EffectUpdate(Effect& absorptionEffect, Player& player) {
 
 	}
 
+	/******** 更新処理 **********/
 	if (absorptionEffect.isEnd == false) {
 
-		absorptionEffect.time += 0.01f;
+		absorptionEffect.time += 0.0125f;
 		absorptionEffect.easeTime = 1.0f - powf(1.0f - absorptionEffect.time, 3.0f);
 		
 		absorptionEffect.position.x = (1.0f - absorptionEffect.easeTime) * absorptionEffect.startPosition.x + absorptionEffect.easeTime * player.position.x;
@@ -162,6 +176,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	int sampleTexture = Novice::LoadTexture("white1x1.png");
 	int circleTexture = Novice::LoadTexture("./circle.png");
 
+	//経過フレーム記録変数
 	float frame = 0.0f;
 
 	/******** エフェクト関係 **********/
@@ -187,9 +202,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		};
 	}
 
+	//プレイヤー
 	Player player = {
 		{640.0f, 360.0f},
 		30.0f,
+		0.0f,
+		0.0f,
 		5.0f
 	};
 
@@ -210,8 +228,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			更新処理ここから
 		*********************************/
 
+		//フレームが一定以上になったらエフェクト生成
 		for (int i = 0; i < maxEffects; i++) {
-			if (frame >= 90.0f) {
+			if (frame >= 110.0f) {
 				if (absorptionEffect[i].isEnd == true) {
 					absorptionEffect[i].init = true;
 					frame = 0.0f;
@@ -222,11 +241,45 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 		}
 
+		//エフェクト更新処理
 		for (int i = 0; i < maxEffects; i++) {
 			EffectUpdate(absorptionEffect[i], player);
 		}
 
-		Novice::ScreenPrintf(0, 20, "frame : %4.2f", frame);
+		/******** プレイヤー移動関係 **********/
+		//プレイヤーの角度変更
+		if (keys[DIK_E]) {
+			player.degree -= 1.0f;
+			player.theta = player.degree * (M_PI / 180.0f);
+		}
+		if (keys[DIK_Q]) {
+			player.degree += 1.0f;
+			player.theta = player.degree * (M_PI / 180.0f);
+		}
+
+		if (player.degree >= 360.0f) {
+			player.degree = 0.0f;
+		}
+		else if (player.degree <= 0.0f) {
+			player.degree = 359.0f;
+		}
+
+		/******** 移動 **********/
+		if (keys[DIK_W]) {
+			player.position.y -= player.speed;
+		}
+		if (keys[DIK_A]) {
+			player.position.x -= player.speed;
+		}
+		if (keys[DIK_S]) {
+			player.position.y += player.speed;
+		}
+		if (keys[DIK_D]) {
+			player.position.x += player.speed;
+		}
+
+		Novice::ScreenPrintf(0, 20, "degree : %4.2f", player.degree);
+		Novice::ScreenPrintf(0, 40, "theta : %4.2f", player.theta);
 
 		/*********************************
 			更新処理ここまで
@@ -280,7 +333,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			RED
 
 		);
-
 		/*********************************
 			描画処理ここまで
 		*********************************/

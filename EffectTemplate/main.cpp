@@ -39,16 +39,26 @@ const int kWindowHeight = 720; //y
 //position ... x, y座標
 //size ... 矩形のサイズ
 //velocity ... 動く速度
-//回転角
+//acceleration ... 加速度
+//theta ... 回転角
 //elapseFrame ... 存在時間
+//time ... 中心点に向かう時間
+//easeTime ... イージング用時間
+//currentAlpha ... 透明度
+//init ... 初期化
 //isEnd ... エフェクトが終了しているか
 struct HealEffect {
 	Vector2D position;
+	Vector2D startPosition;
 	Vector2D size;
 	Vector2D velocity;
 	float acceleration;
 	float theta;
 	float elapseFrame;
+	float time;
+	float easeTime;
+	unsigned int currentAlpha;
+
 	bool init;
 	bool isEnd;
 };
@@ -85,6 +95,10 @@ void HealEffectUpdate(HealEffect& healEffect, Player& player) {
 		healEffect.velocity = { My::RandomF(5.0f, 7.0f, 1), My::RandomF(5.0f, 7.0f, 1) };
 		healEffect.size = { 1, 1 };
 
+		healEffect.time = 0.0f;
+
+		healEffect.currentAlpha = 0xFF;
+
 		//エフェクトが向かう方向をランダムにする
 		healEffect.theta = My::Random(0, 180);
 		healEffect.theta = healEffect.theta * (M_PI / 180.0f);
@@ -97,19 +111,31 @@ void HealEffectUpdate(HealEffect& healEffect, Player& player) {
 
 	}
 
-	if (healEffect.elapseFrame >= 100) {
+	if (healEffect.elapseFrame >= 100 || healEffect.time < 1.00f) {
 
-		//エフェクト消去
-		healEffect.isEnd = true;
-
-		//経過フレーム初期化
-		healEffect.elapseFrame = 0.0f;
+		if (healEffect.currentAlpha > 0xFF) {
+			//エフェクト消去
+			healEffect.isEnd = true;
+			//経過フレーム初期化
+			healEffect.elapseFrame = 0.0f;
+		}
+		else {
+			healEffect.currentAlpha -= 0x06;
+		}
 
 	}
 
 	if (healEffect.isEnd == false) {
 
 		healEffect.position = { player.position.x, player.position.y };
+
+		if (healEffect.time < 1.35f) {
+			healEffect.time += 0.035f;
+		}
+		healEffect.easeTime = 1.0f - powf(1.0f - healEffect.time, 3.0f);
+
+		healEffect.size.x = (1.0 - healEffect.easeTime) * 1 + healEffect.easeTime * 75;
+		healEffect.size.y = (1.0 - healEffect.easeTime) * 1 + healEffect.easeTime * 75;
 
 		//経過フレーム加算
 		healEffect.elapseFrame += 1.0f;
@@ -146,15 +172,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	const int maxEffects = 1;
 
 	//エフェクト
-	HealEffect effect[maxEffects];
+	HealEffect healEffect[maxEffects];
 	for (int i = 0; i < maxEffects; i++) {
-		effect[i] = {
-			{640.0f, 360.0f},
-			{16.0f, 16.0f},
+		healEffect[i] = {
+			{0.0f, 0.0f},
+			{0.0f, 0.0f},
+			{0.0f, 0.0f},
 			{1.0f, 1.0f},
-			0.15f,
 			0.0f,
-			0,
+			0.0f,
+			0.0f,
+			0.0f,
+			0.0f,
+			0xFF,
 			false,
 			true
 		};
@@ -188,12 +218,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE]) {
 			for (int i = 0; i < maxEffects; i++) {
-				effect[i].init = true;
+				healEffect[i].init = true;
 			}
 		}
 
 		for (int i = 0; i < maxEffects; i++) {
-			HealEffectUpdate(effect[i], player);
+			HealEffectUpdate(healEffect[i], player);
 		}
 
 		/******** 移動 **********/
@@ -218,25 +248,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		*********************************/
 		/******** エフェクト描画 **********/
 		for (int i = 0; i < maxEffects; i++) {
-			if (!effect[i].isEnd) {
+			if (!healEffect[i].isEnd) {
 				Novice::DrawQuad(
-					effect[i].position.x - effect[i].size.x,
-					effect[i].position.y + effect[i].size.y,
+					healEffect[i].position.x - healEffect[i].size.x,
+					healEffect[i].position.y + healEffect[i].size.y,
 
-					effect[i].position.x + effect[i].size.x,
-					effect[i].position.y + effect[i].size.y,
+					healEffect[i].position.x + healEffect[i].size.x,
+					healEffect[i].position.y + healEffect[i].size.y,
 
-					effect[i].position.x - effect[i].size.x,
-					effect[i].position.y - effect[i].size.y,
+					healEffect[i].position.x - healEffect[i].size.x,
+					healEffect[i].position.y - healEffect[i].size.y,
 
-					effect[i].position.x + effect[i].size.x,
-					effect[i].position.y - effect[i].size.y,
+					healEffect[i].position.x + healEffect[i].size.x,
+					healEffect[i].position.y - healEffect[i].size.y,
 
 					0, 0,
-					1, 1,
+					32, 32,
 
 					wireCircleTexture,
-					WHITE
+					0xFFFFFFFF00 + healEffect[i].currentAlpha
 				);
 			}
 		}
@@ -258,8 +288,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			1, 1,
 
 			sampleTexture,
-			WHITE
+			RED
 		);
+
+		Novice::ScreenPrintf(0, 10, "time %4.2f", healEffect[0].time);
 
 		/*********************************
 			描画処理ここまで

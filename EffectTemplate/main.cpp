@@ -122,6 +122,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//矩形用テクスチャ読み込み
 	int sampleTexture = Novice::LoadTexture("white1x1.png");
+	int circleTexture = Novice::LoadTexture("./circle.png");
 
 	/******** エフェクト関係 **********/
 	//表示可能エフェクト数

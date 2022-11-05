@@ -82,7 +82,7 @@ void BoostEffectUpdate(Effect& boostEffect, Player& player) {
 		boostEffect.startPosition = boostEffect.position;
 		boostEffect.velocity = { My::RandomF(-1.0f, 1.0f, 1), 2.5f };
 		boostEffect.acceleration = 0.01f;
-		boostEffect.size = { 10.0f, 10.0f };
+		boostEffect.size = { 15.0f, 15.0f };
 
 		//エフェクト表示
 		boostEffect.isEnd = false;
@@ -100,16 +100,11 @@ void BoostEffectUpdate(Effect& boostEffect, Player& player) {
 	}
 
 	if (boostEffect.isEnd == false) {
-		
-		//boostEffect.position.x = (1.0f - boostEffect.elapseFrame) * boostEffect.startPosition.x + boostEffect.elapseFrame * 640.0f;
 
-		/*boostEffect.position.y += boostEffect.velocity.y;
-		boostEffect.velocity.y += boostEffect.acceleration;*/
+		boostEffect.size.x -= boostEffect.velocity.y / 3.0f;
+		boostEffect.size.y -= boostEffect.velocity.y / 3.0f;
 
-		boostEffect.size.x -= boostEffect.velocity.y / 12.0f;
-		boostEffect.size.y -= boostEffect.velocity.y / 12.0f;
-
-		boostEffect.elapseFrame += 0.025f;
+		boostEffect.elapseFrame += 1.0f;
 
 	}
 }
@@ -163,7 +158,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Player player{
 		{640.0f, 360.0f},
 		30.0f,
-		5.0f
+		10.0f
 	};
 
 	/*********************************
@@ -186,22 +181,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		frame += 1.0f;
 
 		for (int i = 0; i < maxEffects; i++) {
-
-			if (keys[DIK_SPACE] && !preKeys[DIK_SPACE]) {
-				boostEffect[i].init = true;
-			}
-
-			if (keys[DIK_SPACE]) {
-				if (frame >= 3.0f) {
-					if (boostEffect[i].isEnd == true) {
-						boostEffect[i].play = true;
-						frame = 0.0f;
-					}
+			if (frame >= 3.0f) {
+				if (boostEffect[i].isEnd == true) {
+					boostEffect[i].init = true;
+					boostEffect[i].play = true;
+					frame = 0.0f;
 				}
 			}
-			else {
-				boostEffect[i].play = false;
-			}
+
 		}
 
 		for (int i = 0; i < maxEffects; i++) {
@@ -229,18 +216,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			描画処理ここから
 		*********************************/
 
-		Novice::DrawEllipse(
-		
-			player.position.x,
-			player.position.y,
-			player.radius,
-			player.radius,
-			0.0f,
-			RED,
-			kFillModeSolid
-		
-		);
-
 		/******** エフェクト描画 **********/
 		for (int i = 0; i < maxEffects; i++) {
 			if (!boostEffect[i].isEnd) {
@@ -260,11 +235,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					0, 0,
 					1, 1,
 
-					circleTexture,
+					sampleTexture,
 					BLACK
 				);
 			}
 		}
+
+		Novice::DrawEllipse(
+		
+			player.position.x,
+			player.position.y,
+			player.radius,
+			player.radius,
+			0.0f,
+			RED,
+			kFillModeSolid
+		
+		);
+
 		Novice::ScreenPrintf(0, 10, "frame : %4.2f", frame);
 		/*********************************
 			描画処理ここまで

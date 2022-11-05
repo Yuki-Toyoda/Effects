@@ -11,24 +11,24 @@
 =================================*/
 
 /*********************************
-    大見出しコピペ
+	大見出しコピペ
 *********************************/
 
 /******** 小見出しコピペ用 **********/
 
 /*================================
-    コピペ用↑
+	コピペ用↑
 =================================*/
 
 /******** ウィンドウ名の指定 **********/
-const char kWindowTitle[] = "破片エフェクト";
+const char kWindowTitle[] = "エフェクト";
 
 /******** ウィンドウサイズの指定 **********/
 const int kWinodowWidth = 1280; //x
 const int kWindowHeight = 720; //y
 
 /*********************************
-    定数の宣言ここまで
+	定数の宣言ここまで
 *********************************/
 
 /*********************************
@@ -48,7 +48,7 @@ struct Effect {
 	Vector2D velocity;
 	float acceleration;
 	float theta;
-	int elapseFrame;
+	float elapseFrame;
 	bool init;
 	bool isEnd;
 };
@@ -62,38 +62,41 @@ struct Effect {
 *********************************/
 
 /******** エフェクト更新処理 **********/
-void EffectUpdate(Effect& debrisEffect) {
+void EffectUpdate(Effect& effect) {
 
-	if (debrisEffect.init == true) {
+	if (effect.init == true) {
 
 		//エフェクトの位置、速度、サイズ初期化
-		debrisEffect.position = { 640.0f, 360.0f };
-		debrisEffect.velocity = { My::RandomF(5.0f, 7.0f, 1), My::RandomF(5.0f, 7.0f, 1) };
-		debrisEffect.size = { 5, 5 };
+		effect.position = { 640.0f, 360.0f };
+		effect.velocity = { My::RandomF(5.0f, 7.0f, 1), My::RandomF(5.0f, 7.0f, 1) };
+		effect.size = { 5, 5 };
 
 		//エフェクトが向かう方向をランダムにする
-		debrisEffect.theta = My::Random(0, 180);
-		debrisEffect.theta = debrisEffect.theta * (M_PI / 180.0f);
+		effect.theta = My::Random(0, 180);
+		effect.theta = effect.theta * (M_PI / 180.0f);
 
 		//エフェクト表示
-		debrisEffect.isEnd = false;
+		effect.isEnd = false;
 
 		//初期化フラグfalse
-		debrisEffect.init = false;
+		effect.init = false;
 
 	}
 
-	if (debrisEffect.position.y >= kWindowHeight || debrisEffect.elapseFrame >= 100) {
+	if (effect.elapseFrame >= 100) {
 
-		debrisEffect.isEnd = true;
+		//エフェクト消去
+		effect.isEnd = true;
 
-		debrisEffect.elapseFrame = 0;
+		//経過フレーム初期化
+		effect.elapseFrame = 0.0f;
 
 	}
 
-	if (debrisEffect.isEnd == false) {
+	if (effect.isEnd == false) {
 
-
+		//経過フレーム加算
+		effect.elapseFrame += 1.0f;
 
 	}
 
@@ -110,8 +113,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Novice::Initialize(kWindowTitle, kWinodowWidth, kWindowHeight);
 
 	// キー入力結果を受け取る箱
-	char keys[256] = {0};
-	char preKeys[256] = {0};
+	char keys[256] = { 0 };
+	char preKeys[256] = { 0 };
 
 	/*********************************
 		変数宣言ここから
@@ -119,6 +122,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//矩形用テクスチャ読み込み
 	int sampleTexture = Novice::LoadTexture("white1x1.png");
+	int circleTexture = Novice::LoadTexture("./circle.png");
 
 	/******** エフェクト関係 **********/
 	//表示可能エフェクト数
@@ -129,9 +133,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	for (int i = 0; i < maxEffects; i++) {
 		effect[i] = {
 			{640.0f, 360.0f},
+			{16.0f, 16.0f},
 			{1.0f, 1.0f},
-			{1.0f, 1.0f},
-			0.8f,
+			0.15f,
 			0.0f,
 			0,
 			false,
@@ -155,7 +159,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			更新処理ここから
 		*********************************/
 
+		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE]) {
+			for (int i = 0; i < maxEffects; i++) {
+				effect[i].init = true;
+			}
+		}
 
+		for (int i = 0; i < maxEffects; i++) {
+			EffectUpdate(effect[i]);
+		}
 
 		/*********************************
 			更新処理ここまで

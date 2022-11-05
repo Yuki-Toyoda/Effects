@@ -21,7 +21,7 @@
 =================================*/
 
 /******** ウィンドウ名の指定 **********/
-const char kWindowTitle[] = "ブーストエフェクト";
+const char kWindowTitle[] = "破片エフェクト";
 
 /******** ウィンドウサイズの指定 **********/
 const int kWinodowWidth = 1280; //x
@@ -41,29 +41,16 @@ const int kWindowHeight = 720; //y
 //velocity ... 動く速度
 //回転角
 //elapseFrame ... 存在時間
-//init ... 初期化
-//play ... エフェクトをプレイするか
 //isEnd ... エフェクトが終了しているか
 struct Effect {
-	Vector2D startPosition;
 	Vector2D position;
 	Vector2D size;
 	Vector2D velocity;
-	float time;
 	float acceleration;
 	float theta;
-	float elapseFrame;
+	int elapseFrame;
 	bool init;
-	bool play;
 	bool isEnd;
-};
-
-struct Player {
-
-	Vector2D position;
-	float radius;
-	float speed;
-
 };
 
 /*********************************
@@ -75,38 +62,41 @@ struct Player {
 *********************************/
 
 /******** エフェクト更新処理 **********/
-void BoostEffectUpdate(Effect& boostEffect, Player& player) {
-	if (boostEffect.init && boostEffect.play) {
+void EffectUpdate(Effect& debrisEffect) {
+
+	if (debrisEffect.init == true) {
+
 		//エフェクトの位置、速度、サイズ初期化
-		boostEffect.position = { My::RandomF(player.position.x - 15.0f, player.position.x + 15.0f, 1), My::RandomF(player.position.y - 15.0f, player.position.y + 15.0f, 1) };
-		boostEffect.startPosition = boostEffect.position;
-		boostEffect.velocity = { My::RandomF(-1.0f, 1.0f, 1), 2.5f };
-		boostEffect.acceleration = 0.01f;
-		boostEffect.size = { 15.0f, 15.0f };
+		debrisEffect.position = { 640.0f, 360.0f };
+		debrisEffect.velocity = { My::RandomF(5.0f, 7.0f, 1), My::RandomF(5.0f, 7.0f, 1) };
+		debrisEffect.size = { 5, 5 };
+
+		//エフェクトが向かう方向をランダムにする
+		debrisEffect.theta = My::Random(0, 180);
+		debrisEffect.theta = debrisEffect.theta * (M_PI / 180.0f);
 
 		//エフェクト表示
-		boostEffect.isEnd = false;
+		debrisEffect.isEnd = false;
 
 		//初期化フラグfalse
-		boostEffect.init = false;
-	}
-
-	if (boostEffect.size.x <= 0 || boostEffect.size.y <= 0) {
-
-		boostEffect.isEnd = true;
-		boostEffect.init = true;
-		boostEffect.elapseFrame = 0.0f;
+		debrisEffect.init = false;
 
 	}
 
-	if (boostEffect.isEnd == false) {
+	if (debrisEffect.position.y >= kWindowHeight || debrisEffect.elapseFrame >= 100) {
 
-		boostEffect.size.x -= boostEffect.velocity.y / 3.0f;
-		boostEffect.size.y -= boostEffect.velocity.y / 3.0f;
+		debrisEffect.isEnd = true;
 
-		boostEffect.elapseFrame += 1.0f;
+		debrisEffect.elapseFrame = 0;
 
 	}
+
+	if (debrisEffect.isEnd == false) {
+
+
+
+	}
+
 }
 
 /*********************************
@@ -129,38 +119,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//矩形用テクスチャ読み込み
 	int sampleTexture = Novice::LoadTexture("white1x1.png");
-	int circleTexture = Novice::LoadTexture("./circle.png");
-
-	float frame = 0.0f;
 
 	/******** エフェクト関係 **********/
 	//表示可能エフェクト数
-	const int maxEffects = 20;
+	const int maxEffects = 30;
 
 	//エフェクト
-	Effect boostEffect[maxEffects];
+	Effect effect[maxEffects];
 	for (int i = 0; i < maxEffects; i++) {
-		boostEffect[i] = {
+		effect[i] = {
 			{640.0f, 360.0f},
-			{640.0f, 360.0f},
-			{16.0f, 16.0f},
 			{1.0f, 1.0f},
-			0.15f,
-			0.0f,
+			{1.0f, 1.0f},
+			0.8f,
 			0.0f,
 			0,
-			false,
 			false,
 			true
 		};
 	}
-
-	Player player{
-		{640.0f, 360.0f},
-		30.0f,
-		10.0f
-	};
-
 	/*********************************
 		変数宣言ここまで
 	*********************************/
@@ -178,35 +155,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			更新処理ここから
 		*********************************/
 
-		frame += 1.0f;
 
-		for (int i = 0; i < maxEffects; i++) {
-			if (frame >= 3.0f) {
-				if (boostEffect[i].isEnd == true) {
-					boostEffect[i].init = true;
-					boostEffect[i].play = true;
-					frame = 0.0f;
-				}
-			}
-
-		}
-
-		for (int i = 0; i < maxEffects; i++) {
-			BoostEffectUpdate(boostEffect[i], player);
-		}
-
-		if (keys[DIK_W]) {
-			player.position.y -= player.speed;
-		}
-		if (keys[DIK_A]) {
-			player.position.x -= player.speed;
-		}
-		if (keys[DIK_S]) {
-			player.position.y += player.speed;
-		}
-		if (keys[DIK_D]) {
-			player.position.x += player.speed;
-		}
 
 		/*********************************
 			更新処理ここまで
@@ -215,45 +164,30 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/*********************************
 			描画処理ここから
 		*********************************/
-
 		/******** エフェクト描画 **********/
 		for (int i = 0; i < maxEffects; i++) {
-			if (!boostEffect[i].isEnd) {
+			if (!effect[i].isEnd) {
 				Novice::DrawQuad(
-					boostEffect[i].position.x - boostEffect[i].size.x,
-					boostEffect[i].position.y + boostEffect[i].size.y,
+					effect[i].position.x - effect[i].size.x,
+					effect[i].position.y + effect[i].size.y,
 
-					boostEffect[i].position.x + boostEffect[i].size.x,
-					boostEffect[i].position.y + boostEffect[i].size.y,
+					effect[i].position.x + effect[i].size.x,
+					effect[i].position.y + effect[i].size.y,
 
-					boostEffect[i].position.x - boostEffect[i].size.x,
-					boostEffect[i].position.y - boostEffect[i].size.y,
+					effect[i].position.x - effect[i].size.x,
+					effect[i].position.y - effect[i].size.y,
 
-					boostEffect[i].position.x + boostEffect[i].size.x,
-					boostEffect[i].position.y - boostEffect[i].size.y,
+					effect[i].position.x + effect[i].size.x,
+					effect[i].position.y - effect[i].size.y,
 
 					0, 0,
 					1, 1,
 
 					sampleTexture,
-					BLACK
+					WHITE
 				);
 			}
 		}
-
-		Novice::DrawEllipse(
-		
-			player.position.x,
-			player.position.y,
-			player.radius,
-			player.radius,
-			0.0f,
-			RED,
-			kFillModeSolid
-		
-		);
-
-		Novice::ScreenPrintf(0, 10, "frame : %4.2f", frame);
 		/*********************************
 			描画処理ここまで
 		*********************************/

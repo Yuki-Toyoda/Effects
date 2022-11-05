@@ -39,16 +39,26 @@ const int kWindowHeight = 720; //y
 //position ... x, y座標
 //size ... 矩形のサイズ
 //velocity ... 動く速度
-//回転角
+//acceleration ... 加速度
+//theta ... 回転角
 //elapseFrame ... 存在時間
+//time ... 中心点に向かう時間
+//easeTime ... イージング用時間
+//currentAlpha ... 透明度
+//init ... 初期化
 //isEnd ... エフェクトが終了しているか
 struct Effect {
 	Vector2D position;
+	Vector2D startPosition;
 	Vector2D size;
 	Vector2D velocity;
 	float acceleration;
 	float theta;
 	float elapseFrame;
+	float time;
+	float easeTime;
+	unsigned int currentAlpha;
+
 	bool init;
 	bool isEnd;
 };

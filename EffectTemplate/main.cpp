@@ -76,14 +76,14 @@ struct Player {
 *********************************/
 
 /******** エフェクト更新処理 **********/
-void HealEffectUpdate(HealEffect& healEffect) {
+void HealEffectUpdate(HealEffect& healEffect, Player& player) {
 
 	if (healEffect.init == true) {
 
 		//エフェクトの位置、速度、サイズ初期化
-		healEffect.position = { 640.0f, 360.0f };
+		healEffect.position = { player.position.x, player.position.y };
 		healEffect.velocity = { My::RandomF(5.0f, 7.0f, 1), My::RandomF(5.0f, 7.0f, 1) };
-		healEffect.size = { 5, 5 };
+		healEffect.size = { 1, 1 };
 
 		//エフェクトが向かう方向をランダムにする
 		healEffect.theta = My::Random(0, 180);
@@ -108,6 +108,8 @@ void HealEffectUpdate(HealEffect& healEffect) {
 	}
 
 	if (healEffect.isEnd == false) {
+
+		healEffect.position = { player.position.x, player.position.y };
 
 		//経過フレーム加算
 		healEffect.elapseFrame += 1.0f;
@@ -137,10 +139,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//矩形用テクスチャ読み込み
 	int sampleTexture = Novice::LoadTexture("white1x1.png");
 	int circleTexture = Novice::LoadTexture("./circle.png");
+	int wireCircleTexture = Novice::LoadTexture("./wireCircle.png");
 
 	/******** エフェクト関係 **********/
 	//表示可能エフェクト数
-	const int maxEffects = 30;
+	const int maxEffects = 1;
 
 	//エフェクト
 	HealEffect effect[maxEffects];
@@ -156,6 +159,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			true
 		};
 	}
+
+	//プレイヤー
+	Player player = {
+		{640.0f, 360.0f},
+		30.0f,
+		0.0f,
+		0.0f,
+		5.0f
+	};
+
 	/*********************************
 		変数宣言ここまで
 	*********************************/
@@ -180,9 +193,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 
 		for (int i = 0; i < maxEffects; i++) {
-			HealEffectUpdate(effect[i]);
+			HealEffectUpdate(effect[i], player);
 		}
 
+		/******** 移動 **********/
+		if (keys[DIK_W]) {
+			player.position.y -= player.speed;
+		}
+		if (keys[DIK_A]) {
+			player.position.x -= player.speed;
+		}
+		if (keys[DIK_S]) {
+			player.position.y += player.speed;
+		}
+		if (keys[DIK_D]) {
+			player.position.x += player.speed;
+		}
 		/*********************************
 			更新処理ここまで
 		*********************************/
@@ -209,11 +235,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					0, 0,
 					1, 1,
 
-					sampleTexture,
+					wireCircleTexture,
 					WHITE
 				);
 			}
 		}
+
+		Novice::DrawQuad(
+			player.position.x - player.radius,
+			player.position.y - player.radius, 
+
+			player.position.x + player.radius,
+			player.position.y - player.radius,
+
+			player.position.x - player.radius,
+			player.position.y + player.radius,
+
+			player.position.x + player.radius,
+			player.position.y + player.radius,
+
+			0, 0,
+			1, 1,
+
+			sampleTexture,
+			WHITE
+		);
+
 		/*********************************
 			描画処理ここまで
 		*********************************/

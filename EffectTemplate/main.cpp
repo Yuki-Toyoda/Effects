@@ -142,12 +142,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Effect effect[maxEffects];
 	for (int i = 0; i < maxEffects; i++) {
 		effect[i] = {
-			{640.0f, 360.0f},
-			{16.0f, 16.0f},
+			{0.0f, 0.0f},
+			{0.0f, 0.0f},
+			{0.0f, 0.0f},
 			{1.0f, 1.0f},
-			0.15f,
 			0.0f,
-			0,
+			0.0f,
+			0.0f,
+			0.0f,
+			0.0f,
+			0xFF,
 			false,
 			true
 		};

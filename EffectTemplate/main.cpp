@@ -21,7 +21,7 @@
 =================================*/
 
 /******** ウィンドウ名の指定 **********/
-const char kWindowTitle[] = "エフェクト";
+const char kWindowTitle[] = "吸収エフェクト";
 
 /******** ウィンドウサイズの指定 **********/
 const int kWinodowWidth = 1280; //x
@@ -193,9 +193,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					effect[i].position.y - effect[i].size.y,
 
 					0, 0,
-					1, 1,
+					32, 32,
 
-					sampleTexture,
+					circleTexture,
 					WHITE
 				);
 			}

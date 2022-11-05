@@ -44,9 +44,12 @@ const int kWindowHeight = 720; //y
 //elapseFrame ... 存在時間
 //time ... 中心点に向かう時間
 //easeTime ... イージング用時間
+//currentAlpha ... 透明度
+//init ... 初期化
 //isEnd ... エフェクトが終了しているか
 struct Effect {
 	Vector2D position;
+	Vector2D startPosition;
 	Vector2D size;
 	Vector2D velocity;
 	float acceleration;
@@ -54,9 +57,16 @@ struct Effect {
 	float elapseFrame;
 	float time;
 	float easeTime;
+	unsigned int currentAlpha;
 
 	bool init;
 	bool isEnd;
+};
+
+struct Player {
+	Vector2D position;
+	float radius;
+	float speed;
 };
 /*********************************
 	構造体宣言ここまで
@@ -67,41 +77,64 @@ struct Effect {
 *********************************/
 
 /******** エフェクト更新処理 **********/
-void EffectUpdate(Effect& effect) {
+void EffectUpdate(Effect& absorptionEffect, Player& player) {
 
-	if (effect.init == true) {
+	if (absorptionEffect.init == true) {
 
 		//エフェクトの位置、速度、サイズ初期化
-		effect.position = { 640.0f, 360.0f };
-		effect.velocity = { My::RandomF(5.0f, 7.0f, 1), My::RandomF(5.0f, 7.0f, 1) };
-		effect.size = { 5, 5 };
+		absorptionEffect.position = { player.position.x, player.position.y };
+		absorptionEffect.size = { 15, 15 };
 
 		//エフェクトが向かう方向をランダムにする
-		effect.theta = My::Random(0, 180);
-		effect.theta = effect.theta * (M_PI / 180.0f);
+		absorptionEffect.theta = My::Random(0, 360);
+		absorptionEffect.theta = absorptionEffect.theta * (M_PI / 180.0f);
+
+		absorptionEffect.position.x += (cosf(absorptionEffect.theta) * 150);
+		absorptionEffect.position.y += -(sinf(absorptionEffect.theta) * 150);
+		
+		absorptionEffect.startPosition.x = absorptionEffect.position.x;
+		absorptionEffect.startPosition.y = absorptionEffect.position.y;
+
+		absorptionEffect.currentAlpha = 0xFF;
+
+		absorptionEffect.time = 0.0f;
 
 		//エフェクト表示
-		effect.isEnd = false;
+		absorptionEffect.isEnd = false;
 
 		//初期化フラグfalse
-		effect.init = false;
+		absorptionEffect.init = false;
 
 	}
 
-	if (effect.elapseFrame >= 100) {
+	if (absorptionEffect.elapseFrame >= 100 || absorptionEffect.time >= 1.0f || absorptionEffect.currentAlpha > 0xFF) {
 
 		//エフェクト消去
-		effect.isEnd = true;
+		absorptionEffect.isEnd = true;
 
 		//経過フレーム初期化
-		effect.elapseFrame = 0.0f;
+		absorptionEffect.elapseFrame = 0.0f;
+
+		//初期化フラグfalse
+		absorptionEffect.init = true;
 
 	}
 
-	if (effect.isEnd == false) {
+	if (absorptionEffect.isEnd == false) {
+
+		absorptionEffect.time += 0.01f;
+		absorptionEffect.easeTime = 1.0f - powf(1.0f - absorptionEffect.time, 3.0f);
+		
+		absorptionEffect.position.x = (1.0f - absorptionEffect.easeTime) * absorptionEffect.startPosition.x + absorptionEffect.easeTime * player.position.x;
+		absorptionEffect.position.y = (1.0f - absorptionEffect.easeTime) * absorptionEffect.startPosition.y + absorptionEffect.easeTime * player.position.y;
+
+		absorptionEffect.size.x -= 0.25f;
+		absorptionEffect.size.y -= 0.25f;
+
+		absorptionEffect.currentAlpha -= 0x04;
 
 		//経過フレーム加算
-		effect.elapseFrame += 1.0f;
+		absorptionEffect.elapseFrame += 1.0f;
 
 	}
 
@@ -129,24 +162,37 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	int sampleTexture = Novice::LoadTexture("white1x1.png");
 	int circleTexture = Novice::LoadTexture("./circle.png");
 
+	float frame = 0.0f;
+
 	/******** エフェクト関係 **********/
 	//表示可能エフェクト数
-	const int maxEffects = 30;
+	const int maxEffects = 15;
 
 	//エフェクト
-	Effect effect[maxEffects];
+	Effect absorptionEffect[maxEffects];
 	for (int i = 0; i < maxEffects; i++) {
-		effect[i] = {
-			{640.0f, 360.0f},
-			{16.0f, 16.0f},
+		absorptionEffect[i] = {
+			{0.0f, 0.0f},
+			{0.0f, 0.0f},
+			{0.0f, 0.0f},
 			{1.0f, 1.0f},
-			0.15f,
 			0.0f,
-			0,
+			0.0f,
+			0.0f,
+			0.0f,
+			0.0f,
+			0xFF,
 			false,
 			true
 		};
 	}
+
+	Player player = {
+		{640.0f, 360.0f},
+		30.0f,
+		5.0f
+	};
+
 	/*********************************
 		変数宣言ここまで
 	*********************************/
@@ -164,15 +210,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			更新処理ここから
 		*********************************/
 
-		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE]) {
-			for (int i = 0; i < maxEffects; i++) {
-				effect[i].init = true;
+		for (int i = 0; i < maxEffects; i++) {
+			if (frame >= 90.0f) {
+				if (absorptionEffect[i].isEnd == true) {
+					absorptionEffect[i].init = true;
+					frame = 0.0f;
+				}
+			}
+			else {
+				frame += 1.0f;
 			}
 		}
 
 		for (int i = 0; i < maxEffects; i++) {
-			EffectUpdate(effect[i]);
+			EffectUpdate(absorptionEffect[i], player);
 		}
+
+		Novice::ScreenPrintf(0, 20, "frame : %4.2f", frame);
 
 		/*********************************
 			更新処理ここまで
@@ -183,28 +237,50 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		*********************************/
 		/******** エフェクト描画 **********/
 		for (int i = 0; i < maxEffects; i++) {
-			if (!effect[i].isEnd) {
+			if (!absorptionEffect[i].isEnd) {
 				Novice::DrawQuad(
-					effect[i].position.x - effect[i].size.x,
-					effect[i].position.y + effect[i].size.y,
+					absorptionEffect[i].position.x - absorptionEffect[i].size.x,
+					absorptionEffect[i].position.y + absorptionEffect[i].size.y,
 
-					effect[i].position.x + effect[i].size.x,
-					effect[i].position.y + effect[i].size.y,
+					absorptionEffect[i].position.x + absorptionEffect[i].size.x,
+					absorptionEffect[i].position.y + absorptionEffect[i].size.y,
 
-					effect[i].position.x - effect[i].size.x,
-					effect[i].position.y - effect[i].size.y,
+					absorptionEffect[i].position.x - absorptionEffect[i].size.x,
+					absorptionEffect[i].position.y - absorptionEffect[i].size.y,
 
-					effect[i].position.x + effect[i].size.x,
-					effect[i].position.y - effect[i].size.y,
+					absorptionEffect[i].position.x + absorptionEffect[i].size.x,
+					absorptionEffect[i].position.y - absorptionEffect[i].size.y,
 
 					0, 0,
 					32, 32,
 
 					circleTexture,
-					WHITE
+					0xFFFFFFFF00 + absorptionEffect[i].currentAlpha
 				);
 			}
 		}
+
+		Novice::DrawQuad(
+			player.position.x - player.radius,
+			player.position.y + player.radius,
+
+			player.position.x + player.radius,
+			player.position.y + player.radius,
+
+			player.position.x - player.radius,
+			player.position.y - player.radius,
+
+			player.position.x + player.radius,
+			player.position.y - player.radius,
+
+			0, 0,
+			1, 1,
+
+			sampleTexture,
+			RED
+
+		);
+
 		/*********************************
 			描画処理ここまで
 		*********************************/

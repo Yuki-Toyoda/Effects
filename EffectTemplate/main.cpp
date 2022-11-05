@@ -21,7 +21,7 @@
 =================================*/
 
 /******** ウィンドウ名の指定 **********/
-const char kWindowTitle[] = "エフェクト";
+const char kWindowTitle[] = "回復エフェクト";
 
 /******** ウィンドウサイズの指定 **********/
 const int kWinodowWidth = 1280; //x
@@ -42,7 +42,7 @@ const int kWindowHeight = 720; //y
 //回転角
 //elapseFrame ... 存在時間
 //isEnd ... エフェクトが終了しているか
-struct Effect {
+struct HealEffect {
 	Vector2D position;
 	Vector2D size;
 	Vector2D velocity;
@@ -62,41 +62,41 @@ struct Effect {
 *********************************/
 
 /******** エフェクト更新処理 **********/
-void EffectUpdate(Effect& effect) {
+void HealEffectUpdate(HealEffect& healEffect) {
 
-	if (effect.init == true) {
+	if (healEffect.init == true) {
 
 		//エフェクトの位置、速度、サイズ初期化
-		effect.position = { 640.0f, 360.0f };
-		effect.velocity = { My::RandomF(5.0f, 7.0f, 1), My::RandomF(5.0f, 7.0f, 1) };
-		effect.size = { 5, 5 };
+		healEffect.position = { 640.0f, 360.0f };
+		healEffect.velocity = { My::RandomF(5.0f, 7.0f, 1), My::RandomF(5.0f, 7.0f, 1) };
+		healEffect.size = { 5, 5 };
 
 		//エフェクトが向かう方向をランダムにする
-		effect.theta = My::Random(0, 180);
-		effect.theta = effect.theta * (M_PI / 180.0f);
+		healEffect.theta = My::Random(0, 180);
+		healEffect.theta = healEffect.theta * (M_PI / 180.0f);
 
 		//エフェクト表示
-		effect.isEnd = false;
+		healEffect.isEnd = false;
 
 		//初期化フラグfalse
-		effect.init = false;
+		healEffect.init = false;
 
 	}
 
-	if (effect.elapseFrame >= 100) {
+	if (healEffect.elapseFrame >= 100) {
 
 		//エフェクト消去
-		effect.isEnd = true;
+		healEffect.isEnd = true;
 
 		//経過フレーム初期化
-		effect.elapseFrame = 0.0f;
+		healEffect.elapseFrame = 0.0f;
 
 	}
 
-	if (effect.isEnd == false) {
+	if (healEffect.isEnd == false) {
 
 		//経過フレーム加算
-		effect.elapseFrame += 1.0f;
+		healEffect.elapseFrame += 1.0f;
 
 	}
 
@@ -129,7 +129,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	const int maxEffects = 30;
 
 	//エフェクト
-	Effect effect[maxEffects];
+	HealEffect effect[maxEffects];
 	for (int i = 0; i < maxEffects; i++) {
 		effect[i] = {
 			{640.0f, 360.0f},
@@ -166,7 +166,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 
 		for (int i = 0; i < maxEffects; i++) {
-			EffectUpdate(effect[i]);
+			HealEffectUpdate(effect[i]);
 		}
 
 		/*********************************

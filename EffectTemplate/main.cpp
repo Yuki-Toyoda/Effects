@@ -53,6 +53,20 @@ struct HealEffect {
 	bool isEnd;
 };
 
+/******** プレイヤー **********/
+//position ... x, y座標
+//radius ... 半径
+//theta ... 角度
+//degree ... 実角度
+//speed ... 移動速度
+struct Player {
+	Vector2D position;
+	float radius;
+	float theta;
+	float degree;
+	float speed;
+};
+
 /*********************************
 	構造体宣言ここまで
 *********************************/

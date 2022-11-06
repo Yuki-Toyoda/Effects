@@ -109,7 +109,7 @@ void EffectUpdate(Effect& boostEffect, Player& player) {
 	}
 
 	/******** 終了処理 **********/
-	if (boostEffect.elapseFrame >= 100 || boostEffect.currentAlpha > 0xFF) {
+	if (boostEffect.elapseFrame >= 100 || boostEffect.currentAlpha > 0xFF || boostEffect.size.x <= 0 || boostEffect.size.y <= 0) {
 
 		//エフェクト消去
 		boostEffect.isEnd = true;
@@ -166,7 +166,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	/******** エフェクト関係 **********/
 	//表示可能エフェクト数
-	const int maxEffects = 30;
+	const int maxEffects = 10;
 
 	//エフェクト
 	Effect boostEffect[maxEffects];
@@ -215,11 +215,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		//フレームが一定以上になったらエフェクト生成
 		for (int i = 0; i < maxEffects; i++) {
-			if (frame >= 110.0f) {
+			if (frame >= 30.0f) {
 				if (boostEffect[i].isEnd == true) {
 					boostEffect[i].init = true;
-					frame = 0.0f;
 				}
+				frame = 0.0f;
 			}
 			else {
 				frame += 1.0f;
@@ -244,6 +244,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		if (keys[DIK_D]) {
 			player.position.x += player.speed;
 		}
+
+		Novice::ScreenPrintf(0, 20, "frame : %4.2f", frame);
 
 		/*********************************
 			更新処理ここまで

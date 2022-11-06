@@ -97,9 +97,6 @@ void EffectUpdate(Effect& boostEffect, Player& player) {
 		//透明度
 		boostEffect.currentAlpha = 0xFF;
 
-		//イージング用変数をリセット
-		boostEffect.time = 0.0f;
-
 		//エフェクト表示
 		boostEffect.isEnd = false;
 
@@ -109,7 +106,7 @@ void EffectUpdate(Effect& boostEffect, Player& player) {
 	}
 
 	/******** 終了処理 **********/
-	if (boostEffect.elapseFrame >= 100 || boostEffect.currentAlpha > 0xFF || boostEffect.size.x <= 0 || boostEffect.size.y <= 0) {
+	if (boostEffect.currentAlpha > 0xFF || boostEffect.size.x <= 0 || boostEffect.size.y <= 0) {
 
 		//エフェクト消去
 		boostEffect.isEnd = true;
@@ -164,6 +161,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//経過フレーム記録変数
 	float frame = 0.0f;
 
+	bool canPlay = false;
+
 	/******** エフェクト関係 **********/
 	//表示可能エフェクト数
 	const int maxEffects = 10;
@@ -213,20 +212,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			更新処理ここから
 		*********************************/
 		
-		frame += 1.0f;
-
-		for (int i = 0; i < maxEffects; i++) {
-			if (frame >= 30.0f) {
-				if (boostEffect[i].isEnd == false) {
+		if (frame >= 30.0f) {
+			for (int i = 0; i < maxEffects; i++) {
+				if (boostEffect[i].isEnd == true) {
 					boostEffect[i].init = true;
 					frame = 0.0f;
 				}
 			}
 		}
-		
-
-		//フレームが一定以上になったらエフェクト生成
-		
+		else {
+			frame += 1.0f;
+		}
 
 		//エフェクト更新処理
 		for (int i = 0; i < maxEffects; i++) {

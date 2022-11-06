@@ -91,7 +91,7 @@ void EffectUpdate(Effect& boostEffect, Player& player) {
 	if (boostEffect.init == true) {
 
 		//エフェクトの位置、速度、サイズ初期化
-		boostEffect.position = { My::RandomF(player.position.x - 10.0f, player.position.x - 10.0f, 1), My::RandomF(player.position.y - 10.0f, player.position.y - 10.0f, 1) };
+		boostEffect.position = { My::RandomF(player.position.x - 10.0f, player.position.x + 10.0f, 1), My::RandomF(player.position.y - 10.0f, player.position.y + 10.0f, 1) };
 		boostEffect.size = { 20, 20 };
 
 		//透明度
@@ -212,19 +212,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/*********************************
 			更新処理ここから
 		*********************************/
+		
+		frame += 1.0f;
 
-		//フレームが一定以上になったらエフェクト生成
 		for (int i = 0; i < maxEffects; i++) {
 			if (frame >= 30.0f) {
-				if (boostEffect[i].isEnd == true) {
+				if (boostEffect[i].isEnd == false) {
 					boostEffect[i].init = true;
+					frame = 0.0f;
 				}
-				frame = 0.0f;
-			}
-			else {
-				frame += 1.0f;
 			}
 		}
+		
+
+		//フレームが一定以上になったらエフェクト生成
+		
 
 		//エフェクト更新処理
 		for (int i = 0; i < maxEffects; i++) {
@@ -254,6 +256,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/*********************************
 			描画処理ここから
 		*********************************/
+
+		Novice::DrawQuad(
+			player.position.x - player.radius,
+			player.position.y + player.radius,
+
+			player.position.x + player.radius,
+			player.position.y + player.radius,
+
+			player.position.x - player.radius,
+			player.position.y - player.radius,
+
+			player.position.x + player.radius,
+			player.position.y - player.radius,
+
+			0, 0,
+			1, 1,
+
+			sampleTexture,
+			RED
+
+		);
+
 		/******** エフェクト描画 **********/
 		for (int i = 0; i < maxEffects; i++) {
 			if (!boostEffect[i].isEnd) {
@@ -279,26 +303,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 		}
 
-		Novice::DrawQuad(
-			player.position.x - player.radius,
-			player.position.y + player.radius,
-
-			player.position.x + player.radius,
-			player.position.y + player.radius,
-
-			player.position.x - player.radius,
-			player.position.y - player.radius,
-
-			player.position.x + player.radius,
-			player.position.y - player.radius,
-
-			0, 0,
-			1, 1,
-
-			sampleTexture,
-			RED
-
-		);
 		/*********************************
 			描画処理ここまで
 		*********************************/

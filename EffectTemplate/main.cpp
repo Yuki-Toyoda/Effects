@@ -91,7 +91,7 @@ void EffectUpdate(Effect& boostEffect, Player& player) {
 	if (boostEffect.init == true) {
 
 		//エフェクトの位置、速度、サイズ初期化
-		boostEffect.position = { My::RandomF(player.position.x - 10.0f, player.position.x + 10.0f, 1), My::RandomF(player.position.y - 10.0f, player.position.y + 10.0f, 1) };
+		boostEffect.position = { My::RandomF(player.position.x - 15.0f, player.position.x + 15.0f, 1), My::RandomF(player.position.y - 15.0f, player.position.y + 15.0f, 1) };
 		boostEffect.size = { 20, 20 };
 
 		//透明度
@@ -106,26 +106,25 @@ void EffectUpdate(Effect& boostEffect, Player& player) {
 	}
 
 	/******** 終了処理 **********/
-	if (boostEffect.currentAlpha > 0xFF || boostEffect.size.x <= 0 || boostEffect.size.y <= 0) {
+	if (boostEffect.currentAlpha < 0x00 || boostEffect.size.x <= 0 || boostEffect.size.y <= 0) {
 
 		//エフェクト消去
 		boostEffect.isEnd = true;
 
+		boostEffect.currentAlpha = 0x00;
+
 		//経過フレーム初期化
 		boostEffect.elapseFrame = 0.0f;
-
-		//初期化フラグfalse
-		boostEffect.init = true;
 
 	}
 
 	/******** 更新処理 **********/
 	if (boostEffect.isEnd == false) {
 
-		boostEffect.size.x -= 0.25f;
-		boostEffect.size.y -= 0.25f;
+		boostEffect.size.x -= 0.50f;
+		boostEffect.size.y -= 0.50f;
 
-		boostEffect.currentAlpha -= 0x04;
+		boostEffect.currentAlpha -= 0x06;
 
 		//経過フレーム加算
 		boostEffect.elapseFrame += 1.0f;
@@ -161,11 +160,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//経過フレーム記録変数
 	float frame = 0.0f;
 
-	bool canPlay = false;
-
 	/******** エフェクト関係 **********/
 	//表示可能エフェクト数
-	const int maxEffects = 10;
+	const int maxEffects = 30;
 
 	//エフェクト
 	Effect boostEffect[maxEffects];
@@ -215,7 +212,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		frame += 1.0f;
 
 		for (int i = 0; i < maxEffects; i++) {
-			if (frame >= 30.0f) {
+			if (frame >= 3.0f) {
 				if (boostEffect[i].isEnd == true) {
 					boostEffect[i].init = true;
 					frame = 0.0f;
@@ -242,6 +239,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 
 		Novice::ScreenPrintf(0, 20, "frame : %4.2f", frame);
+		Novice::ScreenPrintf(0, 40, "isEnd : %d", boostEffect[0].isEnd);
+		Novice::ScreenPrintf(0, 60, "isEnd : %d", boostEffect[1].isEnd);
+		Novice::ScreenPrintf(0, 80, "isEnd : %d", boostEffect[2].isEnd);
+		Novice::ScreenPrintf(0, 100, "isEnd : %d", boostEffect[3].isEnd);
+		Novice::ScreenPrintf(0, 120, "isEnd : %d", boostEffect[4].isEnd);
 
 		/*********************************
 			更新処理ここまで

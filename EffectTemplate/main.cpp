@@ -211,19 +211,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/*********************************
 			更新処理ここから
 		*********************************/
-		
-		if (frame >= 30.0f) {
-			for (int i = 0; i < maxEffects; i++) {
+
+		frame += 1.0f;
+
+		for (int i = 0; i < maxEffects; i++) {
+			if (frame >= 30.0f) {
 				if (boostEffect[i].isEnd == true) {
 					boostEffect[i].init = true;
 					frame = 0.0f;
 				}
 			}
 		}
-		else {
-			frame += 1.0f;
-		}
-
 		//エフェクト更新処理
 		for (int i = 0; i < maxEffects; i++) {
 			EffectUpdate(boostEffect[i], player);

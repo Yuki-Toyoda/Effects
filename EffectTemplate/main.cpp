@@ -86,17 +86,20 @@ struct Player {
 *********************************/
 
 /******** エフェクト更新処理 **********/
-void EffectUpdate(Effect& playerDeathEffect) {
+void DeathParticleUpdate(Effect& playerDeathEffect, Player& player) {
 
 	if (playerDeathEffect.init == true) {
 
 		//エフェクトの位置、速度、サイズ初期化
-		playerDeathEffect.position = { 640.0f, 360.0f };
-		playerDeathEffect.velocity = { My::RandomF(5.0f, 7.0f, 1), My::RandomF(5.0f, 7.0f, 1) };
-		playerDeathEffect.size = { 5, 5 };
+		playerDeathEffect.position = { player.position.x, player.position.y };
+		playerDeathEffect.velocity = { 7.0f, 7.0f };
+		playerDeathEffect.size = { My::RandomF(5.0f, 15.0f, 1), playerDeathEffect.size.x };
 
-		//degreeをradianに変換
-		playerDeathEffect.theta = playerDeathEffect.theta * (M_PI / 180.0f);
+		//経過フレーム初期化
+		playerDeathEffect.elapseFrame = 0.0f;
+
+		playerDeathEffect.position.x += (cosf(playerDeathEffect.theta) * 10);
+		playerDeathEffect.position.y += -(sinf(playerDeathEffect.theta) * 10);
 
 		//エフェクト表示
 		playerDeathEffect.isEnd = false;
@@ -106,7 +109,7 @@ void EffectUpdate(Effect& playerDeathEffect) {
 
 	}
 
-	if (playerDeathEffect.elapseFrame >= 100) {
+	if (playerDeathEffect.elapseFrame >= 100 || playerDeathEffect.size.x == 0) {
 
 		//エフェクト消去
 		playerDeathEffect.isEnd = true;
@@ -118,11 +121,16 @@ void EffectUpdate(Effect& playerDeathEffect) {
 
 	if (playerDeathEffect.isEnd == false) {
 
+		playerDeathEffect.position.x += (cosf(playerDeathEffect.theta) * playerDeathEffect.velocity.x);
+		playerDeathEffect.position.y += -(sinf(playerDeathEffect.theta) * playerDeathEffect.velocity.y);
+
+		playerDeathEffect.velocity.x -= 0.25f;
+		playerDeathEffect.velocity.y -= 0.25f;
+
 		//経過フレーム加算
 		playerDeathEffect.elapseFrame += 1.0f;
 
 	}
-
 }
 
 /*********************************
@@ -146,10 +154,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//矩形用テクスチャ読み込み
 	int sampleTexture = Novice::LoadTexture("white1x1.png");
 	int circleTexture = Novice::LoadTexture("./circle.png");
+	int wireCircleTexture = Novice::LoadTexture("./wireCircle.png");
+
+	//一回に実行するエフェクトの数
+	int possibleTimes = 0;
 
 	/******** エフェクト関係 **********/
 	//表示可能エフェクト数
-	const int maxEffects = 30;
+	const int maxEffects = 12;
 
 	//エフェクト
 	Effect playerDeathEffect[maxEffects];
@@ -199,12 +211,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE]) {
 			for (int i = 0; i < maxEffects; i++) {
 				playerDeathEffect[i].theta = (360 / maxEffects) * i;
+				playerDeathEffect[i].theta = playerDeathEffect[i].theta * (M_PI / 180.0f);
 				playerDeathEffect[i].init = true;
 			}
 		}
 
 		for (int i = 0; i < maxEffects; i++) {
-			EffectUpdate(playerDeathEffect[i]);
+			DeathParticleUpdate(playerDeathEffect[i], player);
 		}
 
 		/******** 移動 **********/
@@ -245,9 +258,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					playerDeathEffect[i].position.y - playerDeathEffect[i].size.y,
 
 					0, 0,
-					1, 1,
+					32, 32,
 
-					sampleTexture,
+					circleTexture,
 					WHITE
 				);
 			}

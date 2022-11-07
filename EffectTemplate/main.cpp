@@ -93,13 +93,10 @@ void DeathParticleUpdate(Effect& playerDeathEffect, Player& player) {
 		//エフェクトの位置、速度、サイズ初期化
 		playerDeathEffect.position = { player.position.x, player.position.y };
 		playerDeathEffect.velocity = { 7.0f, 7.0f };
-		playerDeathEffect.size = { My::RandomF(5.0f, 15.0f, 1), playerDeathEffect.size.x };
+		playerDeathEffect.size = { 10.0f, 10.0f };
 
 		//経過フレーム初期化
 		playerDeathEffect.elapseFrame = 0.0f;
-
-		playerDeathEffect.position.x += (cosf(playerDeathEffect.theta) * 10);
-		playerDeathEffect.position.y += -(sinf(playerDeathEffect.theta) * 10);
 
 		//エフェクト表示
 		playerDeathEffect.isEnd = false;

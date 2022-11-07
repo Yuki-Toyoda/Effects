@@ -21,7 +21,7 @@
 =================================*/
 
 /******** ウィンドウ名の指定 **********/
-const char kWindowTitle[] = "エフェクト";
+const char kWindowTitle[] = "プレイヤー死亡エフェクト";
 
 /******** ウィンドウサイズの指定 **********/
 const int kWinodowWidth = 1280; //x
@@ -63,6 +63,20 @@ struct Effect {
 	bool isEnd;
 };
 
+/******** プレイヤー **********/
+//position ... x, y座標
+//radius ... 半径
+//theta ... 角度
+//degree ... 実角度
+//speed ... 移動速度
+struct Player {
+	Vector2D position;
+	float radius;
+	float theta;
+	float degree;
+	float speed;
+};
+
 /*********************************
 	構造体宣言ここまで
 *********************************/
@@ -72,41 +86,40 @@ struct Effect {
 *********************************/
 
 /******** エフェクト更新処理 **********/
-void EffectUpdate(Effect& effect) {
+void EffectUpdate(Effect& playerDeathEffect) {
 
-	if (effect.init == true) {
+	if (playerDeathEffect.init == true) {
 
 		//エフェクトの位置、速度、サイズ初期化
-		effect.position = { 640.0f, 360.0f };
-		effect.velocity = { My::RandomF(5.0f, 7.0f, 1), My::RandomF(5.0f, 7.0f, 1) };
-		effect.size = { 5, 5 };
+		playerDeathEffect.position = { 640.0f, 360.0f };
+		playerDeathEffect.velocity = { My::RandomF(5.0f, 7.0f, 1), My::RandomF(5.0f, 7.0f, 1) };
+		playerDeathEffect.size = { 5, 5 };
 
-		//エフェクトが向かう方向をランダムにする
-		effect.theta = My::Random(0, 180);
-		effect.theta = effect.theta * (M_PI / 180.0f);
+		//degreeをradianに変換
+		playerDeathEffect.theta = playerDeathEffect.theta * (M_PI / 180.0f);
 
 		//エフェクト表示
-		effect.isEnd = false;
+		playerDeathEffect.isEnd = false;
 
 		//初期化フラグfalse
-		effect.init = false;
+		playerDeathEffect.init = false;
 
 	}
 
-	if (effect.elapseFrame >= 100) {
+	if (playerDeathEffect.elapseFrame >= 100) {
 
 		//エフェクト消去
-		effect.isEnd = true;
+		playerDeathEffect.isEnd = true;
 
 		//経過フレーム初期化
-		effect.elapseFrame = 0.0f;
+		playerDeathEffect.elapseFrame = 0.0f;
 
 	}
 
-	if (effect.isEnd == false) {
+	if (playerDeathEffect.isEnd == false) {
 
 		//経過フレーム加算
-		effect.elapseFrame += 1.0f;
+		playerDeathEffect.elapseFrame += 1.0f;
 
 	}
 
@@ -139,9 +152,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	const int maxEffects = 30;
 
 	//エフェクト
-	Effect effect[maxEffects];
+	Effect playerDeathEffect[maxEffects];
 	for (int i = 0; i < maxEffects; i++) {
-		effect[i] = {
+		playerDeathEffect[i] = {
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
@@ -156,6 +169,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			true
 		};
 	}
+
+	//プレイヤー
+	Player player = {
+		{640.0f, 360.0f},
+		30.0f,
+		0.0f,
+		0.0f,
+		5.0f
+	};
+
 	/*********************************
 		変数宣言ここまで
 	*********************************/
@@ -175,12 +198,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE]) {
 			for (int i = 0; i < maxEffects; i++) {
-				effect[i].init = true;
+				playerDeathEffect[i].theta = (360 / maxEffects) * i;
+				playerDeathEffect[i].init = true;
 			}
 		}
 
 		for (int i = 0; i < maxEffects; i++) {
-			EffectUpdate(effect[i]);
+			EffectUpdate(playerDeathEffect[i]);
+		}
+
+		/******** 移動 **********/
+		if (keys[DIK_W]) {
+			player.position.y -= player.speed;
+		}
+		if (keys[DIK_A]) {
+			player.position.x -= player.speed;
+		}
+		if (keys[DIK_S]) {
+			player.position.y += player.speed;
+		}
+		if (keys[DIK_D]) {
+			player.position.x += player.speed;
 		}
 
 		/*********************************
@@ -192,19 +230,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		*********************************/
 		/******** エフェクト描画 **********/
 		for (int i = 0; i < maxEffects; i++) {
-			if (!effect[i].isEnd) {
+			if (!playerDeathEffect[i].isEnd) {
 				Novice::DrawQuad(
-					effect[i].position.x - effect[i].size.x,
-					effect[i].position.y + effect[i].size.y,
+					playerDeathEffect[i].position.x - playerDeathEffect[i].size.x,
+					playerDeathEffect[i].position.y + playerDeathEffect[i].size.y,
 
-					effect[i].position.x + effect[i].size.x,
-					effect[i].position.y + effect[i].size.y,
+					playerDeathEffect[i].position.x + playerDeathEffect[i].size.x,
+					playerDeathEffect[i].position.y + playerDeathEffect[i].size.y,
 
-					effect[i].position.x - effect[i].size.x,
-					effect[i].position.y - effect[i].size.y,
+					playerDeathEffect[i].position.x - playerDeathEffect[i].size.x,
+					playerDeathEffect[i].position.y - playerDeathEffect[i].size.y,
 
-					effect[i].position.x + effect[i].size.x,
-					effect[i].position.y - effect[i].size.y,
+					playerDeathEffect[i].position.x + playerDeathEffect[i].size.x,
+					playerDeathEffect[i].position.y - playerDeathEffect[i].size.y,
 
 					0, 0,
 					1, 1,
@@ -214,6 +252,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				);
 			}
 		}
+
+		Novice::DrawQuad(
+			player.position.x - player.radius,
+			player.position.y + player.radius,
+
+			player.position.x + player.radius,
+			player.position.y + player.radius,
+
+			player.position.x - player.radius,
+			player.position.y - player.radius,
+
+			player.position.x + player.radius,
+			player.position.y - player.radius,
+
+			0, 0,
+			1, 1,
+
+			sampleTexture,
+			RED
+
+		);
+
 		/*********************************
 			描画処理ここまで
 		*********************************/

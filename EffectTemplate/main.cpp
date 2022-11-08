@@ -85,15 +85,65 @@ struct Player {
 	関数宣言ここから
 *********************************/
 
-/******** エフェクト更新処理 **********/
+/******** 粒子エフェクト更新処理 **********/
+void DeathCircleUpdate(Effect& playerDeathCircleEffect, Player& player,bool& playParticle) {
+
+	if (playerDeathCircleEffect.init == true) {
+
+		//エフェクトの位置、速度、サイズ初期化
+		playerDeathCircleEffect.position = { player.position.x, player.position.y };
+		playerDeathCircleEffect.velocity = { 7.0f, 7.0f };
+		playerDeathCircleEffect.size = { 1.0f, 1.0f };
+
+		//経過フレーム初期化
+		playerDeathCircleEffect.elapseFrame = 0.0f;
+
+		//エフェクト表示
+		playerDeathCircleEffect.isEnd = false;
+
+		//初期化フラグfalse
+		playerDeathCircleEffect.init = false;
+
+	}
+
+	if (playerDeathCircleEffect.elapseFrame >= 100 || playerDeathCircleEffect.size.x <= 0) {
+
+		//エフェクト消去
+		playerDeathCircleEffect.isEnd = true;
+
+		//経過フレーム初期化
+		playerDeathCircleEffect.elapseFrame = 0.0f;
+
+		playParticle = true;
+		playerDeathCircleEffect.size.x = 1;
+
+	}
+
+	if (playerDeathCircleEffect.isEnd == false) {
+
+		playerDeathCircleEffect.size.x += playerDeathCircleEffect.velocity.x;
+		playerDeathCircleEffect.size.y += playerDeathCircleEffect.velocity.y;
+
+		playerDeathCircleEffect.velocity.x -= 0.35f;
+		playerDeathCircleEffect.velocity.y -= 0.35f;
+
+		//経過フレーム加算
+		playerDeathCircleEffect.elapseFrame += 1.0f;
+
+	}
+}
+
+/******** 粒子エフェクト更新処理 **********/
 void DeathParticleUpdate(Effect& playerDeathEffect, Player& player) {
 
 	if (playerDeathEffect.init == true) {
 
 		//エフェクトの位置、速度、サイズ初期化
 		playerDeathEffect.position = { player.position.x, player.position.y };
-		playerDeathEffect.velocity = { 7.0f, 7.0f };
+		playerDeathEffect.velocity = { My::RandomF(15.0f, 20.0f, 1), My::RandomF(15.0f, 20.0f, 1) };
 		playerDeathEffect.size = { 10.0f, 10.0f };
+
+		playerDeathEffect.acceleration = 0.7f;
 
 		//経過フレーム初期化
 		playerDeathEffect.elapseFrame = 0.0f;
@@ -106,10 +156,10 @@ void DeathParticleUpdate(Effect& playerDeathEffect, Player& player) {
 
 	}
 
-	if (playerDeathEffect.elapseFrame >= 100 || playerDeathEffect.size.x == 0) {
+	if (playerDeathEffect.elapseFrame >= 100) {
 
 		//エフェクト消去
-		playerDeathEffect.isEnd = true;
+		//playerDeathEffect.isEnd = true;
 
 		//経過フレーム初期化
 		playerDeathEffect.elapseFrame = 0.0f;
@@ -119,10 +169,16 @@ void DeathParticleUpdate(Effect& playerDeathEffect, Player& player) {
 	if (playerDeathEffect.isEnd == false) {
 
 		playerDeathEffect.position.x += (cosf(playerDeathEffect.theta) * playerDeathEffect.velocity.x);
-		playerDeathEffect.position.y += -(sinf(playerDeathEffect.theta) * playerDeathEffect.velocity.y);
+		playerDeathEffect.position.y += (sinf(playerDeathEffect.theta) * playerDeathEffect.velocity.y);
 
-		playerDeathEffect.velocity.x -= 0.25f;
-		playerDeathEffect.velocity.y -= 0.25f;
+		if (playerDeathEffect.velocity.x > 0.0f || playerDeathEffect.velocity.y > 0.0f) {
+			playerDeathEffect.velocity.x -= playerDeathEffect.acceleration;
+			playerDeathEffect.velocity.y -= playerDeathEffect.acceleration;
+		}
+		else {
+			playerDeathEffect.velocity.x = 0.0f;
+			playerDeathEffect.velocity.y = 0.0f;
+		}
 
 		//経過フレーム加算
 		playerDeathEffect.elapseFrame += 1.0f;
@@ -154,16 +210,38 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	int wireCircleTexture = Novice::LoadTexture("./wireCircle.png");
 
 	//一回に実行するエフェクトの数
-	int possibleTimes = 0;
+	bool playParticle = false;
 
 	/******** エフェクト関係 **********/
-	//表示可能エフェクト数
-	const int maxEffects = 12;
 
-	//エフェクト
-	Effect playerDeathEffect[maxEffects];
-	for (int i = 0; i < maxEffects; i++) {
-		playerDeathEffect[i] = {
+	const int maxCircleEffect = 1;
+
+	//表示可能パーティクルエフェクト数
+	const int maxParticleEffects = 12;
+
+	//サークルエフェクト
+	Effect playerDeathCircleEffect[maxCircleEffect];
+	for (int i = 0; i < maxCircleEffect; i++) {
+		playerDeathCircleEffect[i] = {
+			{0.0f, 0.0f},
+			{0.0f, 0.0f},
+			{0.0f, 0.0f},
+			{1.0f, 1.0f},
+			0.0f,
+			0.0f,
+			0.0f,
+			0.0f,
+			0.0f,
+			0xFF,
+			false,
+			true
+		};
+	}
+
+	//パーティクルエフェクト
+	Effect playerDeathParticleEffect[maxParticleEffects];
+	for (int i = 0; i < maxParticleEffects; i++) {
+		playerDeathParticleEffect[i] = {
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
@@ -206,15 +284,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		*********************************/
 
 		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE]) {
-			for (int i = 0; i < maxEffects; i++) {
-				playerDeathEffect[i].theta = (360 / maxEffects) * i;
-				playerDeathEffect[i].theta = playerDeathEffect[i].theta * (M_PI / 180.0f);
-				playerDeathEffect[i].init = true;
+			for (int i = 0; i < maxCircleEffect; i++) {
+				playerDeathCircleEffect[i].init = true;
 			}
 		}
 
-		for (int i = 0; i < maxEffects; i++) {
-			DeathParticleUpdate(playerDeathEffect[i], player);
+		if (playParticle == true) {
+			for (int i = 0; i < maxParticleEffects; i++){
+				playerDeathParticleEffect[i].theta = (360 / maxParticleEffects) * i;
+				playerDeathParticleEffect[i].theta = playerDeathParticleEffect[i].theta * (M_PI / 180.0f);
+				playerDeathParticleEffect[i].init = true;
+			}
+			playParticle = false;
+		}
+
+		for (int i = 0; i < maxCircleEffect; i++) {
+			DeathCircleUpdate(playerDeathCircleEffect[i], player, playParticle);
+		}
+
+		for (int i = 0; i < maxParticleEffects; i++) {
+			DeathParticleUpdate(playerDeathParticleEffect[i], player);
 		}
 
 		/******** 移動 **********/
@@ -238,21 +327,47 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/*********************************
 			描画処理ここから
 		*********************************/
-		/******** エフェクト描画 **********/
-		for (int i = 0; i < maxEffects; i++) {
-			if (!playerDeathEffect[i].isEnd) {
+
+		/******** サークルエフェクト描画 **********/
+		for (int i = 0; i < maxCircleEffect; i++) {
+			if (!playerDeathCircleEffect[i].isEnd) {
 				Novice::DrawQuad(
-					playerDeathEffect[i].position.x - playerDeathEffect[i].size.x,
-					playerDeathEffect[i].position.y + playerDeathEffect[i].size.y,
+					playerDeathCircleEffect[i].position.x - playerDeathCircleEffect[i].size.x,
+					playerDeathCircleEffect[i].position.y + playerDeathCircleEffect[i].size.y,
 
-					playerDeathEffect[i].position.x + playerDeathEffect[i].size.x,
-					playerDeathEffect[i].position.y + playerDeathEffect[i].size.y,
+					playerDeathCircleEffect[i].position.x + playerDeathCircleEffect[i].size.x,
+					playerDeathCircleEffect[i].position.y + playerDeathCircleEffect[i].size.y,
 
-					playerDeathEffect[i].position.x - playerDeathEffect[i].size.x,
-					playerDeathEffect[i].position.y - playerDeathEffect[i].size.y,
+					playerDeathCircleEffect[i].position.x - playerDeathCircleEffect[i].size.x,
+					playerDeathCircleEffect[i].position.y - playerDeathCircleEffect[i].size.y,
 
-					playerDeathEffect[i].position.x + playerDeathEffect[i].size.x,
-					playerDeathEffect[i].position.y - playerDeathEffect[i].size.y,
+					playerDeathCircleEffect[i].position.x + playerDeathCircleEffect[i].size.x,
+					playerDeathCircleEffect[i].position.y - playerDeathCircleEffect[i].size.y,
+
+					0, 0,
+					32, 32,
+
+					wireCircleTexture,
+					WHITE
+				);
+			}
+		}
+
+		/******** パーティクルエフェクト描画 **********/
+		for (int i = 0; i < maxParticleEffects; i++) {
+			if (!playerDeathParticleEffect[i].isEnd) {
+				Novice::DrawQuad(
+					playerDeathParticleEffect[i].position.x - playerDeathParticleEffect[i].size.x,
+					playerDeathParticleEffect[i].position.y + playerDeathParticleEffect[i].size.y,
+
+					playerDeathParticleEffect[i].position.x + playerDeathParticleEffect[i].size.x,
+					playerDeathParticleEffect[i].position.y + playerDeathParticleEffect[i].size.y,
+
+					playerDeathParticleEffect[i].position.x - playerDeathParticleEffect[i].size.x,
+					playerDeathParticleEffect[i].position.y - playerDeathParticleEffect[i].size.y,
+
+					playerDeathParticleEffect[i].position.x + playerDeathParticleEffect[i].size.x,
+					playerDeathParticleEffect[i].position.y - playerDeathParticleEffect[i].size.y,
 
 					0, 0,
 					32, 32,
@@ -283,6 +398,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			RED
 
 		);
+
+		Novice::ScreenPrintf(0, 20, "playParticle : %d", playParticle);
+		Novice::ScreenPrintf(0, 40, "isEnd : %d", playerDeathParticleEffect[0].isEnd);
+		Novice::ScreenPrintf(0, 60, "isEnd : %d", playerDeathParticleEffect[1].isEnd);
+		Novice::ScreenPrintf(0, 80, "isEnd : %d", playerDeathParticleEffect[2].isEnd);
+		Novice::ScreenPrintf(0, 100, "isEnd : %d", playerDeathParticleEffect[3].isEnd);
+		Novice::ScreenPrintf(0, 120, "isEnd : %d", playerDeathParticleEffect[4].isEnd);
+		
 
 		/*********************************
 			描画処理ここまで

@@ -92,7 +92,7 @@ void DeathCircleUpdate(Effect& playerDeathCircleEffect, Player& player,bool& pla
 
 		//エフェクトの位置、速度、サイズ初期化
 		playerDeathCircleEffect.position = { player.position.x, player.position.y };
-		playerDeathCircleEffect.velocity = { 7.0f, 7.0f };
+		playerDeathCircleEffect.velocity = { 9.0f, 9.0f };
 		playerDeathCircleEffect.size = { 1.0f, 1.0f };
 
 		//経過フレーム初期化
@@ -140,7 +140,7 @@ void DeathParticleUpdate(Effect& playerDeathEffect, Player& player) {
 
 		//エフェクトの位置、速度、サイズ初期化
 		playerDeathEffect.position = { player.position.x, player.position.y };
-		playerDeathEffect.velocity = { My::RandomF(15.0f, 20.0f, 1), My::RandomF(15.0f, 20.0f, 1) };
+		playerDeathEffect.velocity = { My::RandomF(11.5f, 16.5f, 1), My::RandomF(11.5f, 16.5f, 1) };
 		playerDeathEffect.size = { 10.0f, 10.0f };
 
 		playerDeathEffect.acceleration = 0.7f;
@@ -160,7 +160,7 @@ void DeathParticleUpdate(Effect& playerDeathEffect, Player& player) {
 
 	if (playerDeathEffect.elapseFrame >= 100 || playerDeathEffect.velocity.x == 0.0f) {
 
-		if (playerDeathEffect.time < 1.0f) {
+		if (playerDeathEffect.time <= 1.0f) {
 			//粒子エフェクトのイージング処理
 			playerDeathEffect.time += 0.01f;
 
@@ -168,9 +168,9 @@ void DeathParticleUpdate(Effect& playerDeathEffect, Player& player) {
 			playerDeathEffect.size.x = (1.0 - playerDeathEffect.easeTime) * 10.0f + playerDeathEffect.easeTime * 0;
 			playerDeathEffect.size.y = (1.0 - playerDeathEffect.easeTime) * 10.0f + playerDeathEffect.easeTime * 0;
 
-			////粒子エフェクトを徐々に上に
-			//playerDeathEffect.easeTime = playerDeathEffect.time * playerDeathEffect.time;
-			//playerDeathEffect.position.y = (1.0 - playerDeathEffect.easeTime) * playerDeathEffect.startPosition.y + playerDeathEffect.easeTime * (playerDeathEffect.startPosition.y - playerDeathEffect.startPosition.x);
+			//粒子エフェクトを徐々に上に
+			playerDeathEffect.easeTime = playerDeathEffect.time * playerDeathEffect.time;
+			playerDeathEffect.position.y = (1.0 - playerDeathEffect.easeTime) * playerDeathEffect.startPosition.y + playerDeathEffect.easeTime * (playerDeathEffect.startPosition.y - 150);
 		}
 		else {
 			//エフェクト消去
@@ -190,6 +190,8 @@ void DeathParticleUpdate(Effect& playerDeathEffect, Player& player) {
 		if (playerDeathEffect.velocity.x > 0.0f || playerDeathEffect.velocity.y > 0.0f) {
 			playerDeathEffect.velocity.x -= playerDeathEffect.acceleration;
 			playerDeathEffect.velocity.y -= playerDeathEffect.acceleration;
+			playerDeathEffect.startPosition.x = playerDeathEffect.position.x;
+			playerDeathEffect.startPosition.y = playerDeathEffect.position.y;
 		}
 		else {
 			playerDeathEffect.velocity.x = 0.0f;
@@ -233,7 +235,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	const int maxCircleEffect = 1;
 
 	//表示可能パーティクルエフェクト数
-	const int maxParticleEffects = 12;
+	const int maxParticleEffects = 24;
 
 	//サークルエフェクト
 	Effect playerDeathCircleEffect[maxCircleEffect];
@@ -241,7 +243,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		playerDeathCircleEffect[i] = {
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
-			{0.0f, 0.0f},
+			{1.0f, 1.0f},
 			{1.0f, 1.0f},
 			0.0f,
 			0.0f,

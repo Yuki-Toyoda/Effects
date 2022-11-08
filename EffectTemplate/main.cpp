@@ -21,7 +21,7 @@
 =================================*/
 
 /******** ウィンドウ名の指定 **********/
-const char kWindowTitle[] = "エフェクト";
+const char kWindowTitle[] = "弾消滅エフェクト";
 
 /******** ウィンドウサイズの指定 **********/
 const int kWinodowWidth = 1280; //x
@@ -72,41 +72,41 @@ struct Effect {
 *********************************/
 
 /******** エフェクト更新処理 **********/
-void EffectUpdate(Effect& effect) {
+void BulletAnniEffectUpdate(Effect& bulletAnniEffect) {
 
-	if (effect.init == true) {
+	if (bulletAnniEffect.init == true) {
 
 		//エフェクトの位置、速度、サイズ初期化
-		effect.position = { 640.0f, 360.0f };
-		effect.velocity = { My::RandomF(5.0f, 7.0f, 1), My::RandomF(5.0f, 7.0f, 1) };
-		effect.size = { 5, 5 };
+		bulletAnniEffect.position = { 640.0f, 360.0f };
+		bulletAnniEffect.velocity = { My::RandomF(5.0f, 7.0f, 1), My::RandomF(5.0f, 7.0f, 1) };
+		bulletAnniEffect.size = { 5, 5 };
 
 		//エフェクトが向かう方向をランダムにする
-		effect.theta = My::Random(0, 180);
-		effect.theta = effect.theta * (M_PI / 180.0f);
+		bulletAnniEffect.theta = My::Random(0, 180);
+		bulletAnniEffect.theta = bulletAnniEffect.theta * (M_PI / 180.0f);
 
 		//エフェクト表示
-		effect.isEnd = false;
+		bulletAnniEffect.isEnd = false;
 
 		//初期化フラグfalse
-		effect.init = false;
+		bulletAnniEffect.init = false;
 
 	}
 
-	if (effect.elapseFrame >= 100) {
+	if (bulletAnniEffect.elapseFrame >= 100) {
 
 		//エフェクト消去
-		effect.isEnd = true;
+		bulletAnniEffect.isEnd = true;
 
 		//経過フレーム初期化
-		effect.elapseFrame = 0.0f;
+		bulletAnniEffect.elapseFrame = 0.0f;
 
 	}
 
-	if (effect.isEnd == false) {
+	if (bulletAnniEffect.isEnd == false) {
 
 		//経過フレーム加算
-		effect.elapseFrame += 1.0f;
+		bulletAnniEffect.elapseFrame += 1.0f;
 
 	}
 
@@ -136,7 +136,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	/******** エフェクト関係 **********/
 	//表示可能エフェクト数
-	const int maxEffects = 30;
+	const int maxEffects = 4;
 
 	//エフェクト
 	Effect effect[maxEffects];
@@ -156,6 +156,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			true
 		};
 	}
+
 	/*********************************
 		変数宣言ここまで
 	*********************************/
@@ -180,7 +181,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 
 		for (int i = 0; i < maxEffects; i++) {
-			EffectUpdate(effect[i]);
+			BulletAnniEffectUpdate(effect[i]);
 		}
 
 		/*********************************

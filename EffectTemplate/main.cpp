@@ -52,6 +52,7 @@ struct Effect {
 	Vector2D startPosition;
 	Vector2D endPosition;
 	Vector2D size;
+	Vector2D startSize;
 	Vector2D velocity;
 	float acceleration;
 	float theta;
@@ -84,13 +85,18 @@ void BulletAnniEffectUpdate(Effect& bulletAnniEffect, Bullet& bullet) {
 
 		//エフェクトの位置、速度、サイズ初期化
 		bulletAnniEffect.position = { bullet.position.x, bullet.position.y };
-		bulletAnniEffect.velocity = { 7.0f, 7.0f };
-		bulletAnniEffect.size = { 5, 5 };
+		bulletAnniEffect.size = { My::RandomF(5.0f, 7.0f,0), My::RandomF(5.0f, 7.0f,0) };
+		bulletAnniEffect.startSize = { bulletAnniEffect.size.x, bulletAnniEffect.size.y };
 
+		//始端の座標と終端の座標の決定
 		bulletAnniEffect.startPosition = { bulletAnniEffect.position.x, bulletAnniEffect.position.y };
-		bulletAnniEffect.endPosition = { bullet.position.x + (cosf(bulletAnniEffect.theta) * 10), bullet.position.y + (sinf(bulletAnniEffect.theta) * 10) };
+		bulletAnniEffect.endPosition = { bullet.position.x + cosf(bulletAnniEffect.theta) * My::RandomF(40, 80,0), bullet.position.y + sinf(bulletAnniEffect.theta) * My::RandomF(40, 80,0) };
 
+		//イージング用time変数の初期化
 		bulletAnniEffect.time = 0.0f;
+
+		//透明度の初期化
+		bulletAnniEffect.currentAlpha = 0xFF;
 
 		//エフェクト表示
 		bulletAnniEffect.isEnd = false;
@@ -100,7 +106,7 @@ void BulletAnniEffectUpdate(Effect& bulletAnniEffect, Bullet& bullet) {
 
 	}
 
-	if (bulletAnniEffect.elapseFrame >= 100) {
+	if (bulletAnniEffect.elapseFrame > 100 || bulletAnniEffect.time >= 1.0f) {
 
 		//エフェクト消去
 		bulletAnniEffect.isEnd = true;
@@ -116,16 +122,22 @@ void BulletAnniEffectUpdate(Effect& bulletAnniEffect, Bullet& bullet) {
 		if (bulletAnniEffect.time <= 1.0f) {
 
 			//粒子エフェクトのイージング処理
-			bulletAnniEffect.time += 0.01f;
+			bulletAnniEffect.time += 0.03f;
 			bulletAnniEffect.easeTime = 1.0f - powf(1.0f - bulletAnniEffect.time, 3.0f);
 
+			//座標
 			bulletAnniEffect.position.x = (1.0 - bulletAnniEffect.easeTime) * bulletAnniEffect.startPosition.x + bulletAnniEffect.easeTime * bulletAnniEffect.endPosition.x;
 			bulletAnniEffect.position.y = (1.0 - bulletAnniEffect.easeTime) * bulletAnniEffect.startPosition.y + bulletAnniEffect.easeTime * bulletAnniEffect.endPosition.y;
-		}
 
+			//透明度
+			bulletAnniEffect.currentAlpha = (1.0 - bulletAnniEffect.easeTime) * 0xFF + bulletAnniEffect.easeTime * 0x00;
+
+			//大きさ
+			bulletAnniEffect.size.x = (1.0 - bulletAnniEffect.easeTime) * bulletAnniEffect.startSize.x + bulletAnniEffect.easeTime * 0;
+			bulletAnniEffect.size.y = (1.0 - bulletAnniEffect.easeTime) * bulletAnniEffect.startSize.y + bulletAnniEffect.easeTime * 0;
+		}
 		//経過フレーム加算
 		bulletAnniEffect.elapseFrame += 1.0f;
-
 	}
 
 }
@@ -154,7 +166,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	/******** エフェクト関係 **********/
 	//表示可能エフェクト数
-	const int maxEffects = 8;
+	const int maxEffects = 6;
 
 	//エフェクト
 	Effect bulletAnniEffect[maxEffects];
@@ -163,6 +175,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
+			{1.0f, 1.0f},
 			{1.0f, 1.0f},
 			{1.0f, 1.0f},
 			0.0f,
@@ -200,7 +213,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE]) {
 			for (int i = 0; i < maxEffects; i++) {
-				bulletAnniEffect[i].theta = (360 / maxEffects) * (i + 1) + 45;
+				bulletAnniEffect[i].theta = My::Random((360 / maxEffects) * (i + 1) - 30, (360 / maxEffects) * (i + 1) + 30);
 				bulletAnniEffect[i].theta = bulletAnniEffect[i].theta * (M_PI / 180.0f);
 				bulletAnniEffect[i].init = true;
 			}
@@ -237,7 +250,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					1, 1,
 
 					sampleTexture,
-					WHITE
+					0xFFFFFFFF00 + bulletAnniEffect[i].currentAlpha
 				);
 			}
 		}
@@ -261,6 +274,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			circleTexture,
 			RED
 		);
+
+		Novice::ScreenPrintf(0, 10, "isEnd : %d", bulletAnniEffect[0].isEnd);
+		Novice::ScreenPrintf(0, 30, "isEnd : %d", bulletAnniEffect[1].isEnd);
+		Novice::ScreenPrintf(0, 50, "isEnd : %d", bulletAnniEffect[2].isEnd);
+		Novice::ScreenPrintf(0, 70, "isEnd : %d", bulletAnniEffect[3].isEnd);
+		Novice::ScreenPrintf(0, 90, "isEnd : %d", bulletAnniEffect[4].isEnd);
+		Novice::ScreenPrintf(0, 110, "isEnd : %d", bulletAnniEffect[5].isEnd);
 
 		/*********************************
 			描画処理ここまで

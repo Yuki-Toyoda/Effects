@@ -37,7 +37,10 @@ const int kWindowHeight = 720; //y
 
 /******** エフェクト **********/
 //position ... x, y座標
+//startPosition ... 初期座標
+//endPosition ... 終端座標
 //size ... 矩形のサイズ
+//startSize ... 矩形の初期サイズ
 //velocity ... 動く速度
 //acceleration ... 加速度
 //theta ... 回転角

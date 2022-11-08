@@ -90,6 +90,8 @@ void BulletAnniEffectUpdate(Effect& bulletAnniEffect, Bullet& bullet) {
 		bulletAnniEffect.startPosition = { bulletAnniEffect.position.x, bulletAnniEffect.position.y };
 		bulletAnniEffect.endPosition = { (cosf(bulletAnniEffect.theta) * 10),(sinf(bulletAnniEffect.theta) * 10) };
 
+		bulletAnniEffect.time = 0.0f;
+
 		//エフェクト表示
 		bulletAnniEffect.isEnd = false;
 
@@ -110,9 +112,16 @@ void BulletAnniEffectUpdate(Effect& bulletAnniEffect, Bullet& bullet) {
 
 	if (bulletAnniEffect.isEnd == false) {
 
-		//粒子エフェクトを動かす
-		bulletAnniEffect.position.x += (cosf(bulletAnniEffect.theta) * bulletAnniEffect.velocity.x);
-		bulletAnniEffect.position.y += (sinf(bulletAnniEffect.theta) * bulletAnniEffect.velocity.y);
+		///粒子エフェクトが指定された位置まで移動したら
+		if (bulletAnniEffect.time <= 1.0f) {
+
+			//粒子エフェクトのイージング処理
+			bulletAnniEffect.time += 0.01f;
+			bulletAnniEffect.easeTime = 1.0f - powf(1.0f - bulletAnniEffect.time, 3.0f);
+
+			bulletAnniEffect.position.x = (1.0 - bulletAnniEffect.easeTime) * bulletAnniEffect.startPosition.x + bulletAnniEffect.easeTime * bulletAnniEffect.endPosition.x;
+			bulletAnniEffect.position.y = (1.0 - bulletAnniEffect.easeTime) * bulletAnniEffect.startPosition.y + bulletAnniEffect.easeTime * bulletAnniEffect.endPosition.y;
+		}
 
 		//経過フレーム加算
 		bulletAnniEffect.elapseFrame += 1.0f;

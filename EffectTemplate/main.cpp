@@ -63,6 +63,11 @@ struct Effect {
 	bool isEnd;
 };
 
+struct Bullet {
+	Vector2D position;
+	float radius;
+};
+
 /*********************************
 	構造体宣言ここまで
 *********************************/
@@ -80,10 +85,6 @@ void BulletAnniEffectUpdate(Effect& bulletAnniEffect) {
 		bulletAnniEffect.position = { 640.0f, 360.0f };
 		bulletAnniEffect.velocity = { My::RandomF(5.0f, 7.0f, 1), My::RandomF(5.0f, 7.0f, 1) };
 		bulletAnniEffect.size = { 5, 5 };
-
-		//エフェクトが向かう方向をランダムにする
-		bulletAnniEffect.theta = My::Random(0, 180);
-		bulletAnniEffect.theta = bulletAnniEffect.theta * (M_PI / 180.0f);
 
 		//エフェクト表示
 		bulletAnniEffect.isEnd = false;
@@ -104,6 +105,8 @@ void BulletAnniEffectUpdate(Effect& bulletAnniEffect) {
 	}
 
 	if (bulletAnniEffect.isEnd == false) {
+
+		bulletAnniEffect.position.x 
 
 		//経過フレーム加算
 		bulletAnniEffect.elapseFrame += 1.0f;
@@ -139,12 +142,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	const int maxEffects = 4;
 
 	//エフェクト
-	Effect effect[maxEffects];
+	Effect bulletAnniEffect[maxEffects];
 	for (int i = 0; i < maxEffects; i++) {
-		effect[i] = {
+		bulletAnniEffect[i] = {
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
-			{0.0f, 0.0f},
+			{1.0f, 1.0f},
 			{1.0f, 1.0f},
 			0.0f,
 			0.0f,
@@ -156,6 +159,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			true
 		};
 	}
+
+	Bullet bullet = {
+		{640.0f, 360.0f},
+		10.0f
+	};
 
 	/*********************************
 		変数宣言ここまで
@@ -176,12 +184,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE]) {
 			for (int i = 0; i < maxEffects; i++) {
-				effect[i].init = true;
+				bulletAnniEffect[i].theta = (360 / maxEffects) * (i + 1);
+				bulletAnniEffect[i].theta = bulletAnniEffect[i].theta * (M_PI / 180.0f);
+				bulletAnniEffect[i].init = true;
 			}
 		}
 
 		for (int i = 0; i < maxEffects; i++) {
-			BulletAnniEffectUpdate(effect[i]);
+			BulletAnniEffectUpdate(bulletAnniEffect[i]);
 		}
 
 		/*********************************
@@ -193,19 +203,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		*********************************/
 		/******** エフェクト描画 **********/
 		for (int i = 0; i < maxEffects; i++) {
-			if (!effect[i].isEnd) {
+			if (!bulletAnniEffect[i].isEnd) {
 				Novice::DrawQuad(
-					effect[i].position.x - effect[i].size.x,
-					effect[i].position.y + effect[i].size.y,
+					bulletAnniEffect[i].position.x - bulletAnniEffect[i].size.x,
+					bulletAnniEffect[i].position.y + bulletAnniEffect[i].size.y,
 
-					effect[i].position.x + effect[i].size.x,
-					effect[i].position.y + effect[i].size.y,
+					bulletAnniEffect[i].position.x + bulletAnniEffect[i].size.x,
+					bulletAnniEffect[i].position.y + bulletAnniEffect[i].size.y,
 
-					effect[i].position.x - effect[i].size.x,
-					effect[i].position.y - effect[i].size.y,
+					bulletAnniEffect[i].position.x - bulletAnniEffect[i].size.x,
+					bulletAnniEffect[i].position.y - bulletAnniEffect[i].size.y,
 
-					effect[i].position.x + effect[i].size.x,
-					effect[i].position.y - effect[i].size.y,
+					bulletAnniEffect[i].position.x + bulletAnniEffect[i].size.x,
+					bulletAnniEffect[i].position.y - bulletAnniEffect[i].size.y,
 
 					0, 0,
 					1, 1,
@@ -215,6 +225,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				);
 			}
 		}
+
+		Novice::DrawQuad(
+			bullet.position.x - bullet.radius,
+			bullet.position.y + bullet.radius,
+
+			bullet.position.x + bullet.radius,
+			bullet.position.y + bullet.radius,
+
+			bullet.position.x - bullet.radius,
+			bullet.position.y - bullet.radius,
+
+			bullet.position.x + bullet.radius,
+			bullet.position.y - bullet.radius,
+
+			0, 0,
+			32, 32,
+
+			circleTexture,
+			RED
+		);
+
 		/*********************************
 			描画処理ここまで
 		*********************************/

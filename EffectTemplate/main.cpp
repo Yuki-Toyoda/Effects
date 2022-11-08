@@ -140,10 +140,12 @@ void DeathParticleUpdate(Effect& playerDeathEffect, Player& player) {
 
 		//エフェクトの位置、速度、サイズ初期化
 		playerDeathEffect.position = { player.position.x, player.position.y };
+		playerDeathEffect.startPosition.x = playerDeathEffect.position.x;
+		playerDeathEffect.startPosition.y = playerDeathEffect.position.y;
 		playerDeathEffect.velocity = { My::RandomF(11.5f, 16.5f, 1), My::RandomF(11.5f, 16.5f, 1) };
 		playerDeathEffect.size = { 10.0f, 10.0f };
 
-		playerDeathEffect.acceleration = 0.7f;
+		playerDeathEffect.acceleration = 0.55f;
 
 		playerDeathEffect.time = 0.0f;
 
@@ -158,7 +160,7 @@ void DeathParticleUpdate(Effect& playerDeathEffect, Player& player) {
 
 	}
 
-	if (playerDeathEffect.elapseFrame >= 100 || playerDeathEffect.velocity.x == 0.0f) {
+	if (playerDeathEffect.velocity.x <= 0.0f) {
 
 		if (playerDeathEffect.time <= 1.0f) {
 			//粒子エフェクトのイージング処理

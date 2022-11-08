@@ -114,6 +114,7 @@ void DeathCircleUpdate(Effect& playerDeathCircleEffect, Player& player,bool& pla
 		//経過フレーム初期化
 		playerDeathCircleEffect.elapseFrame = 0.0f;
 
+		//パーティクル再生
 		playParticle = true;
 		playerDeathCircleEffect.size.x = 1;
 
@@ -121,9 +122,11 @@ void DeathCircleUpdate(Effect& playerDeathCircleEffect, Player& player,bool& pla
 
 	if (playerDeathCircleEffect.isEnd == false) {
 
+		//サークルのサイズを大きくする
 		playerDeathCircleEffect.size.x += playerDeathCircleEffect.velocity.x;
 		playerDeathCircleEffect.size.y += playerDeathCircleEffect.velocity.y;
 
+		//サークルを大きくする速度を下げる
 		playerDeathCircleEffect.velocity.x -= 0.35f;
 		playerDeathCircleEffect.velocity.y -= 0.35f;
 
@@ -138,15 +141,11 @@ void DeathParticleUpdate(Effect& playerDeathEffect, Player& player) {
 
 	if (playerDeathEffect.init == true) {
 
-		//エフェクトの位置、速度、サイズ初期化
+		//エフェクトの位置、速度、サイズ、加速度、時間初期化
 		playerDeathEffect.position = { player.position.x, player.position.y };
-		playerDeathEffect.startPosition.x = playerDeathEffect.position.x;
-		playerDeathEffect.startPosition.y = playerDeathEffect.position.y;
 		playerDeathEffect.velocity = { My::RandomF(11.5f, 16.5f, 1), My::RandomF(11.5f, 16.5f, 1) };
 		playerDeathEffect.size = { 10.0f, 10.0f };
-
 		playerDeathEffect.acceleration = 0.55f;
-
 		playerDeathEffect.time = 0.0f;
 
 		//経過フレーム初期化
@@ -160,11 +159,14 @@ void DeathParticleUpdate(Effect& playerDeathEffect, Player& player) {
 
 	}
 
-	if (playerDeathEffect.velocity.x <= 0.0f) {
+	if (playerDeathEffect.elapseFrame > 100.0f || playerDeathEffect.velocity.x <= 0.0f) {
 
+		//粒子エフェクトが指定された位置まで移動したら
 		if (playerDeathEffect.time <= 1.0f) {
+
 			//粒子エフェクトのイージング処理
 			playerDeathEffect.time += 0.01f;
+			playerDeathEffect.easeTime = 1.0f - powf(1.0f - playerDeathEffect.time, 3.0f);
 
 			//粒子エフェクトのサイズ変更
 			playerDeathEffect.size.x = (1.0 - playerDeathEffect.easeTime) * 10.0f + playerDeathEffect.easeTime * 0;
@@ -185,10 +187,11 @@ void DeathParticleUpdate(Effect& playerDeathEffect, Player& player) {
 	}
 
 	if (playerDeathEffect.isEnd == false) {
-
+		//粒子エフェクトを動かす
 		playerDeathEffect.position.x += (cosf(playerDeathEffect.theta) * playerDeathEffect.velocity.x);
 		playerDeathEffect.position.y += (sinf(playerDeathEffect.theta) * playerDeathEffect.velocity.y);
 
+		//速度が0になるまで減速し続ける
 		if (playerDeathEffect.velocity.x > 0.0f || playerDeathEffect.velocity.y > 0.0f) {
 			playerDeathEffect.velocity.x -= playerDeathEffect.acceleration;
 			playerDeathEffect.velocity.y -= playerDeathEffect.acceleration;
@@ -196,6 +199,7 @@ void DeathParticleUpdate(Effect& playerDeathEffect, Player& player) {
 			playerDeathEffect.startPosition.y = playerDeathEffect.position.y;
 		}
 		else {
+			//減速しきったら速度を固定
 			playerDeathEffect.velocity.x = 0.0f;
 			playerDeathEffect.velocity.y = 0.0f;
 		}
@@ -304,25 +308,31 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			更新処理ここから
 		*********************************/
 
+		//スペースキーが押されたら初期化
 		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE]) {
 			for (int i = 0; i < maxCircleEffect; i++) {
 				playerDeathCircleEffect[i].init = true;
 			}
 		}
 
+		//粒子エフェクト再生トリガーがTrueの時
 		if (playParticle == true) {
 			for (int i = 0; i < maxParticleEffects; i++){
+				//粒子エフェクトを一定の角度で生成
 				playerDeathParticleEffect[i].theta = (360 / maxParticleEffects) * i;
 				playerDeathParticleEffect[i].theta = playerDeathParticleEffect[i].theta * (M_PI / 180.0f);
 				playerDeathParticleEffect[i].init = true;
 			}
+			//粒子エフェクト再生トリガーFalse
 			playParticle = false;
 		}
 
+		//サークルエフェクト更新処理
 		for (int i = 0; i < maxCircleEffect; i++) {
 			DeathCircleUpdate(playerDeathCircleEffect[i], player, playParticle);
 		}
 
+		//パーティクルエフェクト処理
 		for (int i = 0; i < maxParticleEffects; i++) {
 			DeathParticleUpdate(playerDeathParticleEffect[i], player);
 		}

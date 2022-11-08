@@ -88,7 +88,7 @@ void BulletAnniEffectUpdate(Effect& bulletAnniEffect, Bullet& bullet) {
 		bulletAnniEffect.size = { 5, 5 };
 
 		bulletAnniEffect.startPosition = { bulletAnniEffect.position.x, bulletAnniEffect.position.y };
-		bulletAnniEffect.endPosition = { (cosf(bulletAnniEffect.theta) * 10),(sinf(bulletAnniEffect.theta) * 10) };
+		bulletAnniEffect.endPosition = { bullet.position.x + (cosf(bulletAnniEffect.theta) * 10), bullet.position.y + (sinf(bulletAnniEffect.theta) * 10) };
 
 		bulletAnniEffect.time = 0.0f;
 

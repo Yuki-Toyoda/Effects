@@ -145,6 +145,8 @@ void DeathParticleUpdate(Effect& playerDeathEffect, Player& player) {
 
 		playerDeathEffect.acceleration = 0.7f;
 
+		playerDeathEffect.time = 0.0f;
+
 		//経過フレーム初期化
 		playerDeathEffect.elapseFrame = 0.0f;
 
@@ -156,10 +158,24 @@ void DeathParticleUpdate(Effect& playerDeathEffect, Player& player) {
 
 	}
 
-	if (playerDeathEffect.elapseFrame >= 100) {
+	if (playerDeathEffect.elapseFrame >= 100 || playerDeathEffect.velocity.x == 0.0f) {
 
-		//エフェクト消去
-		//playerDeathEffect.isEnd = true;
+		if (playerDeathEffect.time < 1.0f) {
+			//粒子エフェクトのイージング処理
+			playerDeathEffect.time += 0.01f;
+
+			//粒子エフェクトのサイズ変更
+			playerDeathEffect.size.x = (1.0 - playerDeathEffect.easeTime) * 10.0f + playerDeathEffect.easeTime * 0;
+			playerDeathEffect.size.y = (1.0 - playerDeathEffect.easeTime) * 10.0f + playerDeathEffect.easeTime * 0;
+
+			////粒子エフェクトを徐々に上に
+			//playerDeathEffect.easeTime = playerDeathEffect.time * playerDeathEffect.time;
+			//playerDeathEffect.position.y = (1.0 - playerDeathEffect.easeTime) * playerDeathEffect.startPosition.y + playerDeathEffect.easeTime * (playerDeathEffect.startPosition.y - playerDeathEffect.startPosition.x);
+		}
+		else {
+			//エフェクト消去
+			playerDeathEffect.isEnd = true;
+		}
 
 		//経過フレーム初期化
 		playerDeathEffect.elapseFrame = 0.0f;

@@ -50,6 +50,7 @@ const int kWindowHeight = 720; //y
 struct Effect {
 	Vector2D position;
 	Vector2D startPosition;
+	Vector2D endPosition;
 	Vector2D size;
 	Vector2D velocity;
 	float acceleration;
@@ -77,14 +78,17 @@ struct Bullet {
 *********************************/
 
 /******** エフェクト更新処理 **********/
-void BulletAnniEffectUpdate(Effect& bulletAnniEffect) {
+void BulletAnniEffectUpdate(Effect& bulletAnniEffect, Bullet& bullet) {
 
 	if (bulletAnniEffect.init == true) {
 
 		//エフェクトの位置、速度、サイズ初期化
-		bulletAnniEffect.position = { 640.0f, 360.0f };
-		bulletAnniEffect.velocity = { My::RandomF(5.0f, 7.0f, 1), My::RandomF(5.0f, 7.0f, 1) };
+		bulletAnniEffect.position = { bullet.position.x, bullet.position.y };
+		bulletAnniEffect.velocity = { 7.0f, 7.0f };
 		bulletAnniEffect.size = { 5, 5 };
+
+		bulletAnniEffect.startPosition = { bulletAnniEffect.position.x, bulletAnniEffect.position.y };
+		bulletAnniEffect.endPosition = { (cosf(bulletAnniEffect.theta) * 10),(sinf(bulletAnniEffect.theta) * 10) };
 
 		//エフェクト表示
 		bulletAnniEffect.isEnd = false;
@@ -106,7 +110,9 @@ void BulletAnniEffectUpdate(Effect& bulletAnniEffect) {
 
 	if (bulletAnniEffect.isEnd == false) {
 
-		bulletAnniEffect.position.x 
+		//粒子エフェクトを動かす
+		bulletAnniEffect.position.x += (cosf(bulletAnniEffect.theta) * bulletAnniEffect.velocity.x);
+		bulletAnniEffect.position.y += (sinf(bulletAnniEffect.theta) * bulletAnniEffect.velocity.y);
 
 		//経過フレーム加算
 		bulletAnniEffect.elapseFrame += 1.0f;
@@ -139,12 +145,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	/******** エフェクト関係 **********/
 	//表示可能エフェクト数
-	const int maxEffects = 4;
+	const int maxEffects = 8;
 
 	//エフェクト
 	Effect bulletAnniEffect[maxEffects];
 	for (int i = 0; i < maxEffects; i++) {
 		bulletAnniEffect[i] = {
+			{0.0f, 0.0f},
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
 			{1.0f, 1.0f},
@@ -184,14 +191,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE]) {
 			for (int i = 0; i < maxEffects; i++) {
-				bulletAnniEffect[i].theta = (360 / maxEffects) * (i + 1);
+				bulletAnniEffect[i].theta = (360 / maxEffects) * (i + 1) + 45;
 				bulletAnniEffect[i].theta = bulletAnniEffect[i].theta * (M_PI / 180.0f);
 				bulletAnniEffect[i].init = true;
 			}
 		}
 
 		for (int i = 0; i < maxEffects; i++) {
-			BulletAnniEffectUpdate(bulletAnniEffect[i]);
+			BulletAnniEffectUpdate(bulletAnniEffect[i], bullet);
 		}
 
 		/*********************************

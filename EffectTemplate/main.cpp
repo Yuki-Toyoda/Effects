@@ -84,7 +84,7 @@ void DebrisAnniEffectUpdate(Effect& debrisEffect) {
 		//エフェクトの位置、速度、サイズ初期化
 		debrisEffect.position = { 640.0f, 360.0f };
 		debrisEffect.size = { My::RandomF(5.0f, 7.0f,0), My::RandomF(5.0f, 7.0f,0) };
-		debrisEffect.velocity = { My::RandomF(-7.0f, 7.0f,0), My::RandomF(-12.0f, 7.0f,0) };
+		debrisEffect.velocity = { My::RandomF(-10.0f, 10.0f,0), My::RandomF(-20.0f, 10.0f,0) };
 
 		debrisEffect.acceleration = 0.98f;
 
@@ -117,8 +117,7 @@ void DebrisAnniEffectUpdate(Effect& debrisEffect) {
 
 	if (debrisEffect.isEnd == false) {
 
-		
-		debrisEffect.position.x += debrisEffect.velocity.x;
+		debrisEffect.position.x += cosf(debrisEffect.theta) * debrisEffect.velocity.x;
 		debrisEffect.position.y += debrisEffect.velocity.y;
 
 		debrisEffect.velocity.y += debrisEffect.acceleration;
@@ -153,7 +152,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	/******** エフェクト関係 **********/
 	//表示可能エフェクト数
-	const int maxEffects = 6;
+	const int maxEffects = 10;
 
 	//エフェクト
 	Effect debrisEffect[maxEffects];
@@ -195,7 +194,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE]) {
 			for (int i = 0; i < maxEffects; i++) {
-				debrisEffect[i].theta = My::Random((360 / maxEffects) * (i + 1) - 30, (360 / maxEffects) * (i + 1) + 30);
+				debrisEffect[i].theta = My::Random((180 / maxEffects) * (i + 1) - 10, (180 / maxEffects) * (i + 1) + 10);
 				debrisEffect[i].theta = debrisEffect[i].theta * (M_PI / 180.0f);
 				debrisEffect[i].init = true;
 			}

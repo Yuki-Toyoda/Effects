@@ -21,7 +21,7 @@
 =================================*/
 
 /******** ウィンドウ名の指定 **********/
-const char kWindowTitle[] = "弾消滅エフェクト";
+const char kWindowTitle[] = "破片エフェクト";
 
 /******** ウィンドウサイズの指定 **********/
 const int kWinodowWidth = 1280; //x
@@ -68,11 +68,6 @@ struct Effect {
 	bool isEnd;
 };
 
-struct Bullet {
-	Vector2D position;
-	float radius;
-};
-
 /*********************************
 	構造体宣言ここまで
 *********************************/
@@ -82,65 +77,51 @@ struct Bullet {
 *********************************/
 
 /******** エフェクト更新処理 **********/
-void BulletAnniEffectUpdate(Effect& bulletAnniEffect, Bullet& bullet) {
+void DebrisAnniEffectUpdate(Effect& debrisEffect) {
 
-	if (bulletAnniEffect.init == true) {
+	if (debrisEffect.init == true) {
 
 		//エフェクトの位置、速度、サイズ初期化
-		bulletAnniEffect.position = { bullet.position.x, bullet.position.y };
-		bulletAnniEffect.size = { My::RandomF(5.0f, 7.0f,0), My::RandomF(5.0f, 7.0f,0) };
-		bulletAnniEffect.startSize = { bulletAnniEffect.size.x, bulletAnniEffect.size.y };
+		debrisEffect.position = { 640.0f, 360.0f };
+		debrisEffect.size = { My::RandomF(5.0f, 7.0f,0), My::RandomF(5.0f, 7.0f,0) };
+		debrisEffect.velocity = { My::RandomF(-7.0f, 7.0f,0), My::RandomF(5.0f, 7.0f,0) };
 
-		//始端の座標と終端の座標の決定
-		bulletAnniEffect.startPosition = { bulletAnniEffect.position.x, bulletAnniEffect.position.y };
-		bulletAnniEffect.endPosition = { bullet.position.x + cosf(bulletAnniEffect.theta) * My::RandomF(40, 80,0), bullet.position.y + sinf(bulletAnniEffect.theta) * My::RandomF(40, 80,0) };
+		debrisEffect.acceleration = 0.98f;
 
 		//イージング用time変数の初期化
-		bulletAnniEffect.time = 0.0f;
+		debrisEffect.time = 0.0f;
 
 		//透明度の初期化
-		bulletAnniEffect.currentAlpha = 0xFF;
+		debrisEffect.currentAlpha = 0xFF;
 
 		//エフェクト表示
-		bulletAnniEffect.isEnd = false;
+		debrisEffect.isEnd = false;
 
 		//初期化フラグfalse
-		bulletAnniEffect.init = false;
+		debrisEffect.init = false;
 
 	}
 
-	if (bulletAnniEffect.elapseFrame > 100 || bulletAnniEffect.time >= 1.0f) {
+	if (debrisEffect.elapseFrame > 100 || debrisEffect.time >= 1.0f) {
 
 		//エフェクト消去
-		bulletAnniEffect.isEnd = true;
+		debrisEffect.isEnd = true;
 
 		//経過フレーム初期化
-		bulletAnniEffect.elapseFrame = 0.0f;
+		debrisEffect.elapseFrame = 0.0f;
 
 	}
 
-	if (bulletAnniEffect.isEnd == false) {
+	if (debrisEffect.isEnd == false) {
 
-		///粒子エフェクトが指定された位置まで移動したら
-		if (bulletAnniEffect.time <= 1.0f) {
+		
+		debrisEffect.position.x += debrisEffect.velocity.x;
+		debrisEffect.position.y += debrisEffect.velocity.y;
 
-			//粒子エフェクトのイージング処理
-			bulletAnniEffect.time += 0.03f;
-			bulletAnniEffect.easeTime = 1.0f - powf(1.0f - bulletAnniEffect.time, 3.0f);
+		debrisEffect.velocity.y += debrisEffect.acceleration;
 
-			//座標
-			bulletAnniEffect.position.x = (1.0 - bulletAnniEffect.easeTime) * bulletAnniEffect.startPosition.x + bulletAnniEffect.easeTime * bulletAnniEffect.endPosition.x;
-			bulletAnniEffect.position.y = (1.0 - bulletAnniEffect.easeTime) * bulletAnniEffect.startPosition.y + bulletAnniEffect.easeTime * bulletAnniEffect.endPosition.y;
-
-			//透明度
-			bulletAnniEffect.currentAlpha = (1.0 - bulletAnniEffect.easeTime) * 0xFF + bulletAnniEffect.easeTime * 0x00;
-
-			//大きさ
-			bulletAnniEffect.size.x = (1.0 - bulletAnniEffect.easeTime) * bulletAnniEffect.startSize.x + bulletAnniEffect.easeTime * 0;
-			bulletAnniEffect.size.y = (1.0 - bulletAnniEffect.easeTime) * bulletAnniEffect.startSize.y + bulletAnniEffect.easeTime * 0;
-		}
 		//経過フレーム加算
-		bulletAnniEffect.elapseFrame += 1.0f;
+		debrisEffect.elapseFrame += 1.0f;
 	}
 
 }
@@ -172,9 +153,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	const int maxEffects = 6;
 
 	//エフェクト
-	Effect bulletAnniEffect[maxEffects];
+	Effect debrisEffect[maxEffects];
 	for (int i = 0; i < maxEffects; i++) {
-		bulletAnniEffect[i] = {
+		debrisEffect[i] = {
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
@@ -191,11 +172,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			true
 		};
 	}
-
-	Bullet bullet = {
-		{640.0f, 360.0f},
-		10.0f
-	};
 
 	/*********************************
 		変数宣言ここまで
@@ -216,14 +192,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE]) {
 			for (int i = 0; i < maxEffects; i++) {
-				bulletAnniEffect[i].theta = My::Random((360 / maxEffects) * (i + 1) - 30, (360 / maxEffects) * (i + 1) + 30);
-				bulletAnniEffect[i].theta = bulletAnniEffect[i].theta * (M_PI / 180.0f);
-				bulletAnniEffect[i].init = true;
+				debrisEffect[i].theta = My::Random((360 / maxEffects) * (i + 1) - 30, (360 / maxEffects) * (i + 1) + 30);
+				debrisEffect[i].theta = debrisEffect[i].theta * (M_PI / 180.0f);
+				debrisEffect[i].init = true;
 			}
 		}
 
 		for (int i = 0; i < maxEffects; i++) {
-			BulletAnniEffectUpdate(bulletAnniEffect[i], bullet);
+			DebrisAnniEffectUpdate(debrisEffect[i]);
 		}
 
 		/*********************************
@@ -235,55 +211,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		*********************************/
 		/******** エフェクト描画 **********/
 		for (int i = 0; i < maxEffects; i++) {
-			if (!bulletAnniEffect[i].isEnd) {
+			if (!debrisEffect[i].isEnd) {
 				Novice::DrawQuad(
-					bulletAnniEffect[i].position.x - bulletAnniEffect[i].size.x,
-					bulletAnniEffect[i].position.y + bulletAnniEffect[i].size.y,
+					debrisEffect[i].position.x - debrisEffect[i].size.x,
+					debrisEffect[i].position.y + debrisEffect[i].size.y,
 
-					bulletAnniEffect[i].position.x + bulletAnniEffect[i].size.x,
-					bulletAnniEffect[i].position.y + bulletAnniEffect[i].size.y,
+					debrisEffect[i].position.x + debrisEffect[i].size.x,
+					debrisEffect[i].position.y + debrisEffect[i].size.y,
 
-					bulletAnniEffect[i].position.x - bulletAnniEffect[i].size.x,
-					bulletAnniEffect[i].position.y - bulletAnniEffect[i].size.y,
+					debrisEffect[i].position.x - debrisEffect[i].size.x,
+					debrisEffect[i].position.y - debrisEffect[i].size.y,
 
-					bulletAnniEffect[i].position.x + bulletAnniEffect[i].size.x,
-					bulletAnniEffect[i].position.y - bulletAnniEffect[i].size.y,
+					debrisEffect[i].position.x + debrisEffect[i].size.x,
+					debrisEffect[i].position.y - debrisEffect[i].size.y,
 
 					0, 0,
-					1, 1,
+					32, 32,
 
-					sampleTexture,
-					0xFFFFFFFF00 + bulletAnniEffect[i].currentAlpha
+					circleTexture,
+					0xFFFFFFFF00 + debrisEffect[i].currentAlpha
 				);
 			}
 		}
-
-		Novice::DrawQuad(
-			bullet.position.x - bullet.radius,
-			bullet.position.y + bullet.radius,
-
-			bullet.position.x + bullet.radius,
-			bullet.position.y + bullet.radius,
-
-			bullet.position.x - bullet.radius,
-			bullet.position.y - bullet.radius,
-
-			bullet.position.x + bullet.radius,
-			bullet.position.y - bullet.radius,
-
-			0, 0,
-			32, 32,
-
-			circleTexture,
-			RED
-		);
-
-		Novice::ScreenPrintf(0, 10, "isEnd : %d", bulletAnniEffect[0].isEnd);
-		Novice::ScreenPrintf(0, 30, "isEnd : %d", bulletAnniEffect[1].isEnd);
-		Novice::ScreenPrintf(0, 50, "isEnd : %d", bulletAnniEffect[2].isEnd);
-		Novice::ScreenPrintf(0, 70, "isEnd : %d", bulletAnniEffect[3].isEnd);
-		Novice::ScreenPrintf(0, 90, "isEnd : %d", bulletAnniEffect[4].isEnd);
-		Novice::ScreenPrintf(0, 110, "isEnd : %d", bulletAnniEffect[5].isEnd);
 
 		/*********************************
 			描画処理ここまで

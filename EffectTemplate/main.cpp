@@ -84,12 +84,15 @@ void DebrisAnniEffectUpdate(Effect& debrisEffect) {
 		//エフェクトの位置、速度、サイズ初期化
 		debrisEffect.position = { 640.0f, 360.0f };
 		debrisEffect.size = { My::RandomF(5.0f, 7.0f,0), My::RandomF(5.0f, 7.0f,0) };
-		debrisEffect.velocity = { My::RandomF(-7.0f, 7.0f,0), My::RandomF(5.0f, 7.0f,0) };
+		debrisEffect.velocity = { My::RandomF(-7.0f, 7.0f,0), My::RandomF(-12.0f, 7.0f,0) };
 
 		debrisEffect.acceleration = 0.98f;
 
 		//イージング用time変数の初期化
 		debrisEffect.time = 0.0f;
+
+		//経過フレーム初期化
+		debrisEffect.elapseFrame = 0.0f;
 
 		//透明度の初期化
 		debrisEffect.currentAlpha = 0xFF;

@@ -88,80 +88,77 @@ const int maxEffects = 50;
 *********************************/
 
 /******** エフェクト更新処理 **********/
-void ChargeEffectUpdate(Effect& chargeEffect, Object& object, bool& next, int& effectQuantity) {
-	if (chargeEffect.init == true) {
+void playerHitEffectUpdate(Effect& playerHitEffect, Object& object, bool& next, int& effectQuantity) {
+	if (playerHitEffect.init == true) {
 
 		//位置等を初期化
-		chargeEffect.position = { My::RandomF(object.position.x - object.radius.x / 2, object.position.x + object.radius.x / 2, 1), My::RandomF(object.position.y - object.radius.y / 2, object.position.y+ object.radius.y / 2, 1) };
-		chargeEffect.startPosition = { chargeEffect.position.x, chargeEffect.position.y };
-		chargeEffect.endPosition = { chargeEffect.startPosition.x, chargeEffect.position.y - My::RandomF(200.0f, 300.0f, 1) };
+		playerHitEffect.position = { My::RandomF(object.position.x - object.radius.x / 2, object.position.x + object.radius.x / 2, 1), My::RandomF(object.position.y - object.radius.y / 2, object.position.y+ object.radius.y / 2, 1) };
+		playerHitEffect.startPosition = { playerHitEffect.position.x, playerHitEffect.position.y };
+		playerHitEffect.endPosition = { playerHitEffect.startPosition.x, playerHitEffect.position.y - My::RandomF(200.0f, 300.0f, 1) };
 
-		chargeEffect.size = { My::RandomF(5.0f, 7.5f, 0), chargeEffect.size.x };
-		chargeEffect.startSize = { chargeEffect.size.x, chargeEffect.size.x };
+		playerHitEffect.size = { My::RandomF(5.0f, 7.5f, 0), playerHitEffect.size.x };
+		playerHitEffect.startSize = { playerHitEffect.size.x, playerHitEffect.size.x };
 
-		chargeEffect.strength = My::RandomF(60.0f, 100.0f, 0);
-		chargeEffect.startStrength = chargeEffect.strength;
-		chargeEffect.amplitude = 0.5f;
+		playerHitEffect.strength = My::RandomF(60.0f, 100.0f, 0);
+		playerHitEffect.startStrength = playerHitEffect.strength;
+		playerHitEffect.amplitude = 0.5f;
 
-		chargeEffect.time = 0.0f;
+		playerHitEffect.time = 0.0f;
 
 		next = false;
 
 		//エフェクト表示
-		chargeEffect.isEnd = false;
+		playerHitEffect.isEnd = false;
 
 		effectQuantity += 1;
 
 		//初期化フラグfalse
-		chargeEffect.init = false;
+		playerHitEffect.init = false;
 
 	}
 
-	if (chargeEffect.size.x <= 0.0f) {
+	if (playerHitEffect.size.x <= 0.0f) {
 
 		//エフェクト消去
-		chargeEffect.isEnd = true;
+		playerHitEffect.isEnd = true;
 
 		//経過フレーム初期化
-		chargeEffect.elapseFrame = 0.0f;
+		playerHitEffect.elapseFrame = 0.0f;
 
 	}
 
-	if (chargeEffect.elapseFrame >= 3.0f - (3.0f / maxEffects) * effectQuantity * 1.5f && object.radius.x > 0.0f) {
+	if (playerHitEffect.elapseFrame >= 3.0f - (3.0f / maxEffects) * effectQuantity * 1.5f && object.radius.x > 0.0f) {
 
 		next = true;
-
-		//経過フレーム初期化
-		chargeEffect.elapseFrame = 0.0f;
 	}
 
 	if (object.radius.x < 0.0f) {
 		effectQuantity = 0;
 	}
 
-	if (chargeEffect.isEnd == false) {
+	if (playerHitEffect.isEnd == false) {
 
 		//粒子エフェクトのイージング処理
-		chargeEffect.time += 0.01f;
-		chargeEffect.easeTime = 1.0f - powf(1.0f - chargeEffect.time, 3.0f);
+		playerHitEffect.time += 0.01f;
+		playerHitEffect.easeTime = 1.0f - powf(1.0f - playerHitEffect.time, 3.0f);
 
 		//粒子エフェクトのサイズ変更
-		chargeEffect.size.x = (1.0 - chargeEffect.easeTime) * chargeEffect.startSize.x + chargeEffect.easeTime * 0;
-		chargeEffect.size.y = (1.0 - chargeEffect.easeTime) * chargeEffect.startSize.y + chargeEffect.easeTime * 0;
+		playerHitEffect.size.x = (1.0 - playerHitEffect.easeTime) * playerHitEffect.startSize.x + playerHitEffect.easeTime * 0;
+		playerHitEffect.size.y = (1.0 - playerHitEffect.easeTime) * playerHitEffect.startSize.y + playerHitEffect.easeTime * 0;
 
-		chargeEffect.theta += M_PI / chargeEffect.strength;
-		chargeEffect.position.x += sinf(chargeEffect.theta);
+		playerHitEffect.theta += M_PI / playerHitEffect.strength;
+		playerHitEffect.position.x += sinf(playerHitEffect.theta);
 
-		chargeEffect.strength = (1.0 - chargeEffect.easeTime) * chargeEffect.startStrength + chargeEffect.easeTime * 30;
+		playerHitEffect.strength = (1.0 - playerHitEffect.easeTime) * playerHitEffect.startStrength + playerHitEffect.easeTime * 30;
 
 		//粒子エフェクトを徐々に上に
-		chargeEffect.easeTime = chargeEffect.time * chargeEffect.time;
+		playerHitEffect.easeTime = playerHitEffect.time * playerHitEffect.time;
 
-		chargeEffect.currentAlpha = (1.0 - chargeEffect.easeTime) * 0xFF + chargeEffect.easeTime * 0x00;
-		chargeEffect.position.y = (1.0 - chargeEffect.easeTime) * chargeEffect.startPosition.y + chargeEffect.easeTime * chargeEffect.endPosition.y;
+		playerHitEffect.currentAlpha = (1.0 - playerHitEffect.easeTime) * 0xFF + playerHitEffect.easeTime * 0x00;
+		playerHitEffect.position.y = (1.0 - playerHitEffect.easeTime) * playerHitEffect.startPosition.y + playerHitEffect.easeTime * playerHitEffect.endPosition.y;
 
 		//経過フレーム加算
-		chargeEffect.elapseFrame += 1.0f;
+		playerHitEffect.elapseFrame += 1.0f;
 
 	}
 
@@ -198,9 +195,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	int mousePosY = 0;
 
 	//エフェクト
-	Effect chargeEffect[maxEffects];
+	Effect playerHitEffect[maxEffects];
 	for (int i = 0; i < maxEffects; i++) {
-		chargeEffect[i] = {
+		playerHitEffect[i] = {
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
@@ -255,8 +252,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		if (next == true) {
 			for (int i = 0; i < maxEffects; i++) {
-				if (next == true && chargeEffect[i].isEnd == true) {
-					chargeEffect[i].init = true;
+				if (next == true && playerHitEffect[i].isEnd == true) {
+					playerHitEffect[i].init = true;
 					next = false;
 				}
 			}
@@ -272,7 +269,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 
 		for (int i = 0; i < maxEffects; i++) {
-			ChargeEffectUpdate(chargeEffect[i], object, next, effectQuantity);
+			playerHitEffectUpdate(playerHitEffect[i], object, next, effectQuantity);
 		}
 
 		Novice::ScreenPrintf(0, 10, "Quantity : %d", effectQuantity);
@@ -307,25 +304,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		/******** エフェクト描画 **********/
 		for (int i = 0; i < maxEffects; i++) {
-			if (!chargeEffect[i].isEnd) {
+			if (!playerHitEffect[i].isEnd) {
 				Novice::DrawQuad(
-					chargeEffect[i].position.x - chargeEffect[i].size.x,
-					chargeEffect[i].position.y + chargeEffect[i].size.y,
+					playerHitEffect[i].position.x - playerHitEffect[i].size.x,
+					playerHitEffect[i].position.y + playerHitEffect[i].size.y,
 
-					chargeEffect[i].position.x + chargeEffect[i].size.x,
-					chargeEffect[i].position.y + chargeEffect[i].size.y,
+					playerHitEffect[i].position.x + playerHitEffect[i].size.x,
+					playerHitEffect[i].position.y + playerHitEffect[i].size.y,
 
-					chargeEffect[i].position.x - chargeEffect[i].size.x,
-					chargeEffect[i].position.y - chargeEffect[i].size.y,
+					playerHitEffect[i].position.x - playerHitEffect[i].size.x,
+					playerHitEffect[i].position.y - playerHitEffect[i].size.y,
 
-					chargeEffect[i].position.x + chargeEffect[i].size.x,
-					chargeEffect[i].position.y - chargeEffect[i].size.y,
+					playerHitEffect[i].position.x + playerHitEffect[i].size.x,
+					playerHitEffect[i].position.y - playerHitEffect[i].size.y,
 
 					0, 0,
 					32, 32,
 
 					circleTexture,
-					0xFFFFFFFF00 + chargeEffect[i].currentAlpha
+					0xFFFFFFFF00 + playerHitEffect[i].currentAlpha
 				);
 			}
 		}

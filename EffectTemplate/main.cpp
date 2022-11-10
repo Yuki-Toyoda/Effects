@@ -35,6 +35,15 @@ const int kWindowHeight = 720; //y
 	構造体宣言ここから
 *********************************/
 
+struct Quad {
+
+	Vector2D q1;
+	Vector2D q2;
+	Vector2D q3;
+	Vector2D q4;
+
+};
+
 /******** エフェクト **********/
 //position ... x, y座標
 //startPosition ... 初期座標
@@ -51,6 +60,8 @@ const int kWindowHeight = 720; //y
 //init ... 初期化
 //isEnd ... エフェクトが終了しているか
 struct Effect {
+	Quad rotate;
+	Quad point;
 	Vector2D position;
 	Vector2D startPosition;
 	Vector2D endPosition;
@@ -59,6 +70,7 @@ struct Effect {
 	Vector2D velocity;
 	float acceleration;
 	float theta;
+	float degree;
 	float elapseFrame;
 	float time;
 	float easeTime;
@@ -85,12 +97,20 @@ void DebrisAnniEffectUpdate(Effect& debrisEffect) {
 
 		//エフェクトの位置、速度、サイズ初期化
 		debrisEffect.position = { 640.0f, 360.0f };
-		debrisEffect.size = { My::RandomF(10.0f, 20.0f,0), debrisEffect.size.x };
-		debrisEffect.velocity = { My::RandomF(-10.0f, 10.0f,0), My::RandomF(-20.0f, 10.0f,0) };
+		debrisEffect.size = { My::RandomF(7.5f, 15.0f,0), debrisEffect.size.x };
+		debrisEffect.velocity = { My::RandomF(-10.0f, 10.0f,0), My::RandomF(-15.0f, 10.0f,0) };
 
 		debrisEffect.acceleration = 0.98f;
 
-		debrisEffect.theta = My::RandomF(0.0f, 360.0f, 0);
+		debrisEffect.degree = My::RandomF(0.0f, 360.0f, 0);
+		debrisEffect.theta = debrisEffect.degree * (M_PI / 180.0f);
+
+		debrisEffect.point = {
+			{ -debrisEffect.size.x, -debrisEffect.size.y},
+			{debrisEffect.size.x, -debrisEffect.size.y},
+			{-debrisEffect.size.x, debrisEffect.size.y},
+			{debrisEffect.size.x, debrisEffect.size.y}
+		};
 
 		//イージング用time変数の初期化
 		debrisEffect.time = 0.0f;
@@ -123,12 +143,30 @@ void DebrisAnniEffectUpdate(Effect& debrisEffect) {
 
 	if (debrisEffect.isEnd == false) {
 
-		debrisEffect.position.x += cosf(debrisEffect.theta) * debrisEffect.velocity.x;
+		debrisEffect.position.x += debrisEffect.velocity.x;
 		debrisEffect.position.y += debrisEffect.velocity.y;
+
+		debrisEffect.rotate.q1.x = debrisEffect.point.q1.x * cosf(debrisEffect.theta) - debrisEffect.point.q1.y * -sinf(debrisEffect.theta) + debrisEffect.position.x;
+		debrisEffect.rotate.q1.y = debrisEffect.point.q1.y * cosf(debrisEffect.theta) + debrisEffect.point.q1.x * -sinf(debrisEffect.theta) + debrisEffect.position.y;
+
+		debrisEffect.rotate.q2.x = debrisEffect.point.q2.x * cosf(debrisEffect.theta) - debrisEffect.point.q2.y * -sinf(debrisEffect.theta) + debrisEffect.position.x;
+		debrisEffect.rotate.q2.y = debrisEffect.point.q2.y * cosf(debrisEffect.theta) + debrisEffect.point.q2.x * -sinf(debrisEffect.theta) + debrisEffect.position.y;
+
+		debrisEffect.rotate.q3.x = debrisEffect.point.q3.x * cosf(debrisEffect.theta) - debrisEffect.point.q3.y * -sinf(debrisEffect.theta) + debrisEffect.position.x;
+		debrisEffect.rotate.q3.y = debrisEffect.point.q3.y * cosf(debrisEffect.theta) + debrisEffect.point.q3.x * -sinf(debrisEffect.theta) + debrisEffect.position.y;
+
+		debrisEffect.rotate.q4.x = debrisEffect.point.q4.x * cosf(debrisEffect.theta) - debrisEffect.point.q4.y * -sinf(debrisEffect.theta) + debrisEffect.position.x;
+		debrisEffect.rotate.q4.y = debrisEffect.point.q4.y * cosf(debrisEffect.theta) + debrisEffect.point.q4.x * -sinf(debrisEffect.theta) + debrisEffect.position.y;
 
 		debrisEffect.velocity.y += debrisEffect.acceleration;
 
-		debrisEffect.theta += 10.0f;
+		debrisEffect.degree += 30.0f;
+
+		if (debrisEffect.degree >= 360) {
+			debrisEffect.degree = 0;
+		}
+
+		debrisEffect.theta = debrisEffect.degree * (M_PI / 180.0f);
 
 		//経過フレーム加算
 		debrisEffect.elapseFrame += 1.0f;
@@ -166,18 +204,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	/******** エフェクト関係 **********/
 	//表示可能エフェクト数
-	const int maxEffects = 10;
+	const int maxEffects = 5;
 
 	//エフェクト
 	Effect debrisEffect[maxEffects];
 	for (int i = 0; i < maxEffects; i++) {
 		debrisEffect[i] = {
+			{{0.0f, 0.0f},
+			{0.0f, 0.0f},
+			{0.0f, 0.0f},
+			{0.0f, 0.0f}},
+			{{0.0f, 0.0f},
+			{0.0f, 0.0f},
+			{0.0f, 0.0f},
+			{0.0f, 0.0f}},
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
 			{1.0f, 1.0f},
 			{1.0f, 1.0f},
 			{1.0f, 1.0f},
+			0.0f,
 			0.0f,
 			0.0f,
 			0.0f,
@@ -209,8 +256,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE]) {
 			for (int i = 0; i < maxEffects; i++) {
-				debrisEffect[i].theta = My::Random((180 / maxEffects) * (i + 1) - 10, (180 / maxEffects) * (i + 1) + 10);
-				debrisEffect[i].theta = debrisEffect[i].theta * (M_PI / 180.0f);
 				debrisEffect[i].init = true;
 			}
 		}
@@ -230,17 +275,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		for (int i = 0; i < maxEffects; i++) {
 			if (!debrisEffect[i].isEnd) {
 				Novice::DrawQuad(
-					debrisEffect[i].position.x - debrisEffect[i].size.x,
-					debrisEffect[i].position.y + debrisEffect[i].size.y,
+					debrisEffect[i].rotate.q1.x,
+					debrisEffect[i].rotate.q1.y,
 
-					debrisEffect[i].position.x + debrisEffect[i].size.x,
-					debrisEffect[i].position.y + debrisEffect[i].size.y,
+					debrisEffect[i].rotate.q2.x,
+					debrisEffect[i].rotate.q2.y,
 
-					debrisEffect[i].position.x - debrisEffect[i].size.x,
-					debrisEffect[i].position.y - debrisEffect[i].size.y,
+					debrisEffect[i].rotate.q3.x,
+					debrisEffect[i].rotate.q3.y,
 
-					debrisEffect[i].position.x + debrisEffect[i].size.x,
-					debrisEffect[i].position.y - debrisEffect[i].size.y,
+					debrisEffect[i].rotate.q4.x,
+					debrisEffect[i].rotate.q4.y,
 
 					0, 0,
 					32, 32,

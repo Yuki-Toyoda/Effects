@@ -88,80 +88,80 @@ const int maxEffects = 50;
 *********************************/
 
 /******** エフェクト更新処理 **********/
-void AnniEffectUpdate(Effect& anniEffect, Object& object, bool& next, int& effectQuantity) {
-	if (anniEffect.init == true) {
+void ChargeEffectUpdate(Effect& chargeEffect, Object& object, bool& next, int& effectQuantity) {
+	if (chargeEffect.init == true) {
 
 		//位置等を初期化
-		anniEffect.position = { My::RandomF(object.position.x - object.radius.x / 2, object.position.x + object.radius.x / 2, 1), My::RandomF(object.position.y - object.radius.y / 2, object.position.y+ object.radius.y / 2, 1) };
-		anniEffect.startPosition = { anniEffect.position.x, anniEffect.position.y };
-		anniEffect.endPosition = { anniEffect.startPosition.x, anniEffect.position.y - My::RandomF(200.0f, 300.0f, 1) };
+		chargeEffect.position = { My::RandomF(object.position.x - object.radius.x / 2, object.position.x + object.radius.x / 2, 1), My::RandomF(object.position.y - object.radius.y / 2, object.position.y+ object.radius.y / 2, 1) };
+		chargeEffect.startPosition = { chargeEffect.position.x, chargeEffect.position.y };
+		chargeEffect.endPosition = { chargeEffect.startPosition.x, chargeEffect.position.y - My::RandomF(200.0f, 300.0f, 1) };
 
-		anniEffect.size = { My::RandomF(5.0f, 7.5f, 0), anniEffect.size.x };
-		anniEffect.startSize = { anniEffect.size.x, anniEffect.size.x };
+		chargeEffect.size = { My::RandomF(5.0f, 7.5f, 0), chargeEffect.size.x };
+		chargeEffect.startSize = { chargeEffect.size.x, chargeEffect.size.x };
 
-		anniEffect.strength = My::RandomF(60.0f, 100.0f, 0);
-		anniEffect.startStrength = anniEffect.strength;
-		anniEffect.amplitude = 0.5f;
+		chargeEffect.strength = My::RandomF(60.0f, 100.0f, 0);
+		chargeEffect.startStrength = chargeEffect.strength;
+		chargeEffect.amplitude = 0.5f;
 
-		anniEffect.time = 0.0f;
+		chargeEffect.time = 0.0f;
 
 		next = false;
 
 		//エフェクト表示
-		anniEffect.isEnd = false;
+		chargeEffect.isEnd = false;
 
 		effectQuantity += 1;
 
 		//初期化フラグfalse
-		anniEffect.init = false;
+		chargeEffect.init = false;
 
 	}
 
-	if (anniEffect.size.x <= 0.0f) {
+	if (chargeEffect.size.x <= 0.0f) {
 
 		//エフェクト消去
-		anniEffect.isEnd = true;
+		chargeEffect.isEnd = true;
 
 		//経過フレーム初期化
-		anniEffect.elapseFrame = 0.0f;
+		chargeEffect.elapseFrame = 0.0f;
 
 	}
 
-	if (anniEffect.elapseFrame >= 3.0f - (3.0f / maxEffects) * effectQuantity * 1.5f && object.radius.x > 0.0f) {
+	if (chargeEffect.elapseFrame >= 3.0f - (3.0f / maxEffects) * effectQuantity * 1.5f && object.radius.x > 0.0f) {
 
 		next = true;
 
 		//経過フレーム初期化
-		anniEffect.elapseFrame = 0.0f;
+		chargeEffect.elapseFrame = 0.0f;
 	}
 
 	if (object.radius.x < 0.0f) {
 		effectQuantity = 0;
 	}
 
-	if (anniEffect.isEnd == false) {
+	if (chargeEffect.isEnd == false) {
 
 		//粒子エフェクトのイージング処理
-		anniEffect.time += 0.01f;
-		anniEffect.easeTime = 1.0f - powf(1.0f - anniEffect.time, 3.0f);
+		chargeEffect.time += 0.01f;
+		chargeEffect.easeTime = 1.0f - powf(1.0f - chargeEffect.time, 3.0f);
 
 		//粒子エフェクトのサイズ変更
-		anniEffect.size.x = (1.0 - anniEffect.easeTime) * anniEffect.startSize.x + anniEffect.easeTime * 0;
-		anniEffect.size.y = (1.0 - anniEffect.easeTime) * anniEffect.startSize.y + anniEffect.easeTime * 0;
+		chargeEffect.size.x = (1.0 - chargeEffect.easeTime) * chargeEffect.startSize.x + chargeEffect.easeTime * 0;
+		chargeEffect.size.y = (1.0 - chargeEffect.easeTime) * chargeEffect.startSize.y + chargeEffect.easeTime * 0;
 
-		anniEffect.theta += M_PI / anniEffect.strength;
-		anniEffect.position.x += sinf(anniEffect.theta);
+		chargeEffect.theta += M_PI / chargeEffect.strength;
+		chargeEffect.position.x += sinf(chargeEffect.theta);
 
-		anniEffect.strength = (1.0 - anniEffect.easeTime) * anniEffect.startStrength + anniEffect.easeTime * 30;
+		chargeEffect.strength = (1.0 - chargeEffect.easeTime) * chargeEffect.startStrength + chargeEffect.easeTime * 30;
 
 		//粒子エフェクトを徐々に上に
-		anniEffect.easeTime = anniEffect.time * anniEffect.time;
+		chargeEffect.easeTime = chargeEffect.time * chargeEffect.time;
 
-		anniEffect.currentAlpha = (1.0 - anniEffect.easeTime) * 0xFF + anniEffect.easeTime * 0x00;
-		anniEffect.position.y = (1.0 - anniEffect.easeTime) * anniEffect.startPosition.y + anniEffect.easeTime * anniEffect.endPosition.y;
+		chargeEffect.currentAlpha = (1.0 - chargeEffect.easeTime) * 0xFF + chargeEffect.easeTime * 0x00;
+		chargeEffect.position.y = (1.0 - chargeEffect.easeTime) * chargeEffect.startPosition.y + chargeEffect.easeTime * chargeEffect.endPosition.y;
 
 		//経過フレーム加算
-		anniEffect.elapseFrame += 1.0f;
+		chargeEffect.elapseFrame += 1.0f;
 
 	}
 
@@ -198,9 +198,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	int mousePosY = 0;
 
 	//エフェクト
-	Effect anniEffect[maxEffects];
+	Effect chargeEffect[maxEffects];
 	for (int i = 0; i < maxEffects; i++) {
-		anniEffect[i] = {
+		chargeEffect[i] = {
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
@@ -223,7 +223,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Object object{
 		{640.0f, 360.0f},
-		{0.0f, 0.0f}
+		{10.0f, 10.0f}
 	};
 
 	/*********************************
@@ -243,15 +243,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			更新処理ここから
 		*********************************/
 
+		Novice::GetMousePosition(&mousePosX, &mousePosY);
+		object.position = { (float)mousePosX, (float)mousePosY };
+
 		if (Novice::IsTriggerMouse(0)) {
 
-			Novice::GetMousePosition(&mousePosX, &mousePosY);
-
-			object.position = { (float)mousePosX, (float)mousePosY };
-
-			object.radius = { 200.0f, 200.0f };
-			object.velocity = 1.0f;
-			object.acceleration = 0.05f;
 			next = true;
 
 		}
@@ -259,8 +255,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		if (next == true) {
 			for (int i = 0; i < maxEffects; i++) {
-				if (next == true && anniEffect[i].isEnd == true) {
-					anniEffect[i].init = true;
+				if (next == true && chargeEffect[i].isEnd == true) {
+					chargeEffect[i].init = true;
 					next = false;
 				}
 			}
@@ -276,7 +272,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 
 		for (int i = 0; i < maxEffects; i++) {
-			AnniEffectUpdate(anniEffect[i], object, next, effectQuantity);
+			ChargeEffectUpdate(chargeEffect[i], object, next, effectQuantity);
 		}
 
 		Novice::ScreenPrintf(0, 10, "Quantity : %d", effectQuantity);
@@ -311,25 +307,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		/******** エフェクト描画 **********/
 		for (int i = 0; i < maxEffects; i++) {
-			if (!anniEffect[i].isEnd) {
+			if (!chargeEffect[i].isEnd) {
 				Novice::DrawQuad(
-					anniEffect[i].position.x - anniEffect[i].size.x,
-					anniEffect[i].position.y + anniEffect[i].size.y,
+					chargeEffect[i].position.x - chargeEffect[i].size.x,
+					chargeEffect[i].position.y + chargeEffect[i].size.y,
 
-					anniEffect[i].position.x + anniEffect[i].size.x,
-					anniEffect[i].position.y + anniEffect[i].size.y,
+					chargeEffect[i].position.x + chargeEffect[i].size.x,
+					chargeEffect[i].position.y + chargeEffect[i].size.y,
 
-					anniEffect[i].position.x - anniEffect[i].size.x,
-					anniEffect[i].position.y - anniEffect[i].size.y,
+					chargeEffect[i].position.x - chargeEffect[i].size.x,
+					chargeEffect[i].position.y - chargeEffect[i].size.y,
 
-					anniEffect[i].position.x + anniEffect[i].size.x,
-					anniEffect[i].position.y - anniEffect[i].size.y,
+					chargeEffect[i].position.x + chargeEffect[i].size.x,
+					chargeEffect[i].position.y - chargeEffect[i].size.y,
 
 					0, 0,
 					32, 32,
 
 					circleTexture,
-					0xFFFFFFFF00 + anniEffect[i].currentAlpha
+					0xFFFFFFFF00 + chargeEffect[i].currentAlpha
 				);
 			}
 		}

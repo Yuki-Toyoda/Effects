@@ -76,6 +76,9 @@ struct Object {
 	float acceleration;
 };
 
+//表示可能エフェクト数
+const int maxEffects = 50;
+
 /*********************************
 	構造体宣言ここまで
 *********************************/
@@ -124,10 +127,15 @@ void AnniEffectUpdate(Effect& anniEffect, Object& object, bool& next, int& effec
 
 	}
 
-	if (anniEffect.elapseFrame == 1.0f && object.radius.x > 0.0f) {
+	if (anniEffect.elapseFrame >= 3.0f - (3.0f / maxEffects) * effectQuantity * 1.5f && object.radius.x > 0.0f) {
+
 		next = true;
+
+		//経過フレーム初期化
+		anniEffect.elapseFrame = 0.0f;
 	}
-	else {
+
+	if (object.radius.x < 0.0f) {
 		effectQuantity = 0;
 	}
 
@@ -182,8 +190,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	int circleTexture = Novice::LoadTexture("./circle.png");
 
 	/******** エフェクト関係 **********/
-	//表示可能エフェクト数
-	const int maxEffects = 50;
 
 	int effectQuantity = 0;
 	bool next = false;
@@ -243,7 +249,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			object.position = { (float)mousePosX, (float)mousePosY };
 
-			object.radius = { 300.0f, 20.0f };
+			object.radius = { 200.0f, 200.0f };
 			object.velocity = 1.0f;
 			object.acceleration = 0.05f;
 			next = true;
@@ -262,7 +268,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		if (object.radius.x > 0) {
 			object.radius.x -= object.velocity;
-			//object.radius.y -= object.velocity;
+			object.radius.y -= object.velocity;
 			object.velocity += object.acceleration;
 		}
 		else {

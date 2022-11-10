@@ -96,12 +96,12 @@ void playerHitEffectUpdate(Effect& playerHitEffect, Object& object, bool& next, 
 		playerHitEffect.startPosition = { playerHitEffect.position.x, playerHitEffect.position.y };
 		playerHitEffect.endPosition = { playerHitEffect.startPosition.x, playerHitEffect.position.y + My::RandomF(200.0f, 300.0f, 1) };
 
-		playerHitEffect.size = { My::RandomF(10.0f, 20.0f, 0), playerHitEffect.size.x };
+		playerHitEffect.size = { My::RandomF(10.0f, 15.0f, 0), playerHitEffect.size.x };
 		playerHitEffect.startSize = { playerHitEffect.size.x, playerHitEffect.size.x };
 
-		playerHitEffect.strength = My::RandomF(60.0f, 100.0f, 0);
+		playerHitEffect.strength = My::RandomF(10.0f, 30.0f, 0);
 		playerHitEffect.startStrength = playerHitEffect.strength;
-		playerHitEffect.amplitude = 0.5f;
+		playerHitEffect.amplitude = 1.0f;
 
 		playerHitEffect.time = 0.0f;
 
@@ -127,7 +127,7 @@ void playerHitEffectUpdate(Effect& playerHitEffect, Object& object, bool& next, 
 
 	}
 
-	if (playerHitEffect.elapseFrame >= 3.0f - (3.0f / maxEffects) * effectQuantity * 1.5f && object.radius.x > 0.0f) {
+	if (playerHitEffect.elapseFrame >= 1.0f && object.radius.x > 0.0f) {
 		next = true;
 
 		//経過フレーム初期化

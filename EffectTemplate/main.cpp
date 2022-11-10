@@ -77,7 +77,7 @@ struct Object {
 };
 
 //表示可能エフェクト数
-const int maxEffects = 50;
+const int maxEffects = 100;
 
 /*********************************
 	構造体宣言ここまで
@@ -96,7 +96,7 @@ void playerHitEffectUpdate(Effect& playerHitEffect, Object& object, bool& next, 
 		playerHitEffect.startPosition = { playerHitEffect.position.x, playerHitEffect.position.y };
 		playerHitEffect.endPosition = { playerHitEffect.startPosition.x, playerHitEffect.position.y - My::RandomF(200.0f, 300.0f, 1) };
 
-		playerHitEffect.size = { My::RandomF(5.0f, 7.5f, 0), playerHitEffect.size.x };
+		playerHitEffect.size = { My::RandomF(10.0f, 20.0f, 0), playerHitEffect.size.x };
 		playerHitEffect.startSize = { playerHitEffect.size.x, playerHitEffect.size.x };
 
 		playerHitEffect.strength = My::RandomF(60.0f, 100.0f, 0);
@@ -128,8 +128,10 @@ void playerHitEffectUpdate(Effect& playerHitEffect, Object& object, bool& next, 
 	}
 
 	if (playerHitEffect.elapseFrame >= 3.0f - (3.0f / maxEffects) * effectQuantity * 1.5f && object.radius.x > 0.0f) {
-
 		next = true;
+
+		//経過フレーム初期化
+		playerHitEffect.elapseFrame = 0.0f;
 	}
 
 	if (object.radius.x < 0.0f) {
@@ -154,7 +156,7 @@ void playerHitEffectUpdate(Effect& playerHitEffect, Object& object, bool& next, 
 		//粒子エフェクトを徐々に上に
 		playerHitEffect.easeTime = playerHitEffect.time * playerHitEffect.time;
 
-		playerHitEffect.currentAlpha = (1.0 - playerHitEffect.easeTime) * 0xFF + playerHitEffect.easeTime * 0x00;
+		playerHitEffect.currentAlpha = (1.0 - playerHitEffect.easeTime) * 0xff7f50FF + playerHitEffect.easeTime * 0xb22222FF;
 		playerHitEffect.position.y = (1.0 - playerHitEffect.easeTime) * playerHitEffect.startPosition.y + playerHitEffect.easeTime * playerHitEffect.endPosition.y;
 
 		//経過フレーム加算
@@ -322,7 +324,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					32, 32,
 
 					circleTexture,
-					0xFFFFFFFF00 + playerHitEffect[i].currentAlpha
+					playerHitEffect[i].currentAlpha
 				);
 			}
 		}

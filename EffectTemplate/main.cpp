@@ -94,7 +94,7 @@ void playerHitEffectUpdate(Effect& playerHitEffect, Object& object, bool& next, 
 		//位置等を初期化
 		playerHitEffect.position = { My::RandomF(object.position.x - object.radius.x / 2, object.position.x + object.radius.x / 2, 1), My::RandomF(object.position.y - object.radius.y / 2, object.position.y+ object.radius.y / 2, 1) };
 		playerHitEffect.startPosition = { playerHitEffect.position.x, playerHitEffect.position.y };
-		playerHitEffect.endPosition = { playerHitEffect.startPosition.x, playerHitEffect.position.y - My::RandomF(200.0f, 300.0f, 1) };
+		playerHitEffect.endPosition = { playerHitEffect.startPosition.x, playerHitEffect.position.y + My::RandomF(200.0f, 300.0f, 1) };
 
 		playerHitEffect.size = { My::RandomF(10.0f, 20.0f, 0), playerHitEffect.size.x };
 		playerHitEffect.startSize = { playerHitEffect.size.x, playerHitEffect.size.x };
@@ -156,7 +156,7 @@ void playerHitEffectUpdate(Effect& playerHitEffect, Object& object, bool& next, 
 		//粒子エフェクトを徐々に上に
 		playerHitEffect.easeTime = playerHitEffect.time * playerHitEffect.time;
 
-		playerHitEffect.currentAlpha = (1.0 - playerHitEffect.easeTime) * 0xff7f50FF + playerHitEffect.easeTime * 0xb22222FF;
+		playerHitEffect.currentAlpha = (1.0 - playerHitEffect.easeTime) * 0xff7f50FF + playerHitEffect.easeTime * 0xff4500FF;
 		playerHitEffect.position.y = (1.0 - playerHitEffect.easeTime) * playerHitEffect.startPosition.y + playerHitEffect.easeTime * playerHitEffect.endPosition.y;
 
 		//経過フレーム加算

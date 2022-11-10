@@ -66,6 +66,8 @@ struct Effect {
 
 	bool init;
 	bool isEnd;
+
+	int texture;
 };
 
 /*********************************
@@ -83,16 +85,20 @@ void DebrisAnniEffectUpdate(Effect& debrisEffect) {
 
 		//エフェクトの位置、速度、サイズ初期化
 		debrisEffect.position = { 640.0f, 360.0f };
-		debrisEffect.size = { My::RandomF(5.0f, 7.0f,0), My::RandomF(5.0f, 7.0f,0) };
+		debrisEffect.size = { My::RandomF(10.0f, 20.0f,0), debrisEffect.size.x };
 		debrisEffect.velocity = { My::RandomF(-10.0f, 10.0f,0), My::RandomF(-20.0f, 10.0f,0) };
 
 		debrisEffect.acceleration = 0.98f;
+
+		debrisEffect.theta = My::RandomF(0.0f, 360.0f, 0);
 
 		//イージング用time変数の初期化
 		debrisEffect.time = 0.0f;
 
 		//経過フレーム初期化
 		debrisEffect.elapseFrame = 0.0f;
+
+		debrisEffect.texture = My::Random(0, 3);
 
 		//透明度の初期化
 		debrisEffect.currentAlpha = 0xFF;
@@ -122,6 +128,8 @@ void DebrisAnniEffectUpdate(Effect& debrisEffect) {
 
 		debrisEffect.velocity.y += debrisEffect.acceleration;
 
+		debrisEffect.theta += 10.0f;
+
 		//経過フレーム加算
 		debrisEffect.elapseFrame += 1.0f;
 	}
@@ -150,6 +158,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	int sampleTexture = Novice::LoadTexture("white1x1.png");
 	int circleTexture = Novice::LoadTexture("./circle.png");
 
+	int debrisTex[4];
+	debrisTex[0] = Novice::LoadTexture("./Debris1.png");
+	debrisTex[1] = Novice::LoadTexture("./Debris2.png");
+	debrisTex[2] = Novice::LoadTexture("./Debris3.png");
+	debrisTex[3] = Novice::LoadTexture("./Debris4.png");
+
 	/******** エフェクト関係 **********/
 	//表示可能エフェクト数
 	const int maxEffects = 10;
@@ -171,7 +185,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			0.0f,
 			0xFF,
 			false,
-			true
+			true,
+			debrisTex[0]
 		};
 	}
 
@@ -230,7 +245,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					0, 0,
 					32, 32,
 
-					circleTexture,
+					debrisTex[debrisEffect[i].texture],
 					0xFFFFFFFF00 + debrisEffect[i].currentAlpha
 				);
 			}

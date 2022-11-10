@@ -21,7 +21,7 @@
 =================================*/
 
 /******** ウィンドウ名の指定 **********/
-const char kWindowTitle[] = "エフェクト";
+const char kWindowTitle[] = "消滅エフェクト";
 
 /******** ウィンドウサイズの指定 **********/
 const int kWinodowWidth = 1280; //x
@@ -50,6 +50,7 @@ const int kWindowHeight = 720; //y
 struct Effect {
 	Vector2D position;
 	Vector2D startPosition;
+	Vector2D endPosition;
 	Vector2D size;
 	Vector2D velocity;
 	float acceleration;
@@ -63,6 +64,12 @@ struct Effect {
 	bool isEnd;
 };
 
+struct Object {
+	Vector2D position;
+	Vector2D radius;
+	Vector2D startRadius;
+};
+
 /*********************************
 	構造体宣言ここまで
 *********************************/
@@ -72,41 +79,49 @@ struct Effect {
 *********************************/
 
 /******** エフェクト更新処理 **********/
-void EffectUpdate(Effect& effect) {
+void AnniEffectUpdate(Effect& anniEffect, Object& object) {
 
-	if (effect.init == true) {
+	if (anniEffect.init == true) {
 
-		//エフェクトの位置、速度、サイズ初期化
-		effect.position = { 640.0f, 360.0f };
-		effect.velocity = { My::RandomF(5.0f, 7.0f, 1), My::RandomF(5.0f, 7.0f, 1) };
-		effect.size = { 5, 5 };
+		//位置等を初期化
+		anniEffect.position = { My::RandomF(object.position.x - object.radius.x / 2, object.position.x + object.radius.x / 2, 1), My::RandomF(object.position.y - object.radius.y, object.position. y+ object.radius.y, 1) };
+		anniEffect.startPosition = { anniEffect.position.x, anniEffect.position.y };
+		anniEffect.endPosition = { anniEffect.startPosition.x, anniEffect.startPosition.y - 100 };
+		anniEffect.velocity = { My::RandomF(5.0f, 7.0f, 1), My::RandomF(5.0f, 7.0f, 1) };
+		anniEffect.size = { 5, 5 };
+
+		anniEffect.time = 0.0f;
 
 		//エフェクトが向かう方向をランダムにする
-		effect.theta = My::Random(0, 180);
-		effect.theta = effect.theta * (M_PI / 180.0f);
+		anniEffect.theta = My::Random(0, 180);
+		anniEffect.theta = anniEffect.theta * (M_PI / 180.0f);
 
 		//エフェクト表示
-		effect.isEnd = false;
+		anniEffect.isEnd = false;
 
 		//初期化フラグfalse
-		effect.init = false;
+		anniEffect.init = false;
 
 	}
 
-	if (effect.elapseFrame >= 100) {
+	if (anniEffect.elapseFrame >= 100) {
 
 		//エフェクト消去
-		effect.isEnd = true;
+		anniEffect.isEnd = true;
+
+		object.radius = {0.0f, 0.0f};
 
 		//経過フレーム初期化
-		effect.elapseFrame = 0.0f;
+		anniEffect.elapseFrame = 0.0f;
 
 	}
 
-	if (effect.isEnd == false) {
+	if (anniEffect.isEnd == false) {
+
+		anniEffect.time += 0.01f;
 
 		//経過フレーム加算
-		effect.elapseFrame += 1.0f;
+		anniEffect.elapseFrame += 1.0f;
 
 	}
 
@@ -139,9 +154,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	const int maxEffects = 30;
 
 	//エフェクト
-	Effect effect[maxEffects];
+	Effect anniEffect[maxEffects];
 	for (int i = 0; i < maxEffects; i++) {
-		effect[i] = {
+		anniEffect[i] = {
+			{0.0f, 0.0f},
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
@@ -156,6 +172,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			true
 		};
 	}
+
+	Object object{
+		{640.0f, 360.0f},
+		{0.0f, 0.0f}
+	};
+
 	/*********************************
 		変数宣言ここまで
 	*********************************/
@@ -175,12 +197,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE]) {
 			for (int i = 0; i < maxEffects; i++) {
-				effect[i].init = true;
+				object.radius = {100.0f, 20.0f};
+				anniEffect[i].init = true;
 			}
 		}
 
 		for (int i = 0; i < maxEffects; i++) {
-			EffectUpdate(effect[i]);
+			AnniEffectUpdate(anniEffect[i], object);
 		}
 
 		/*********************************
@@ -192,28 +215,49 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		*********************************/
 		/******** エフェクト描画 **********/
 		for (int i = 0; i < maxEffects; i++) {
-			if (!effect[i].isEnd) {
+			if (!anniEffect[i].isEnd) {
 				Novice::DrawQuad(
-					effect[i].position.x - effect[i].size.x,
-					effect[i].position.y + effect[i].size.y,
+					anniEffect[i].position.x - anniEffect[i].size.x,
+					anniEffect[i].position.y + anniEffect[i].size.y,
 
-					effect[i].position.x + effect[i].size.x,
-					effect[i].position.y + effect[i].size.y,
+					anniEffect[i].position.x + anniEffect[i].size.x,
+					anniEffect[i].position.y + anniEffect[i].size.y,
 
-					effect[i].position.x - effect[i].size.x,
-					effect[i].position.y - effect[i].size.y,
+					anniEffect[i].position.x - anniEffect[i].size.x,
+					anniEffect[i].position.y - anniEffect[i].size.y,
 
-					effect[i].position.x + effect[i].size.x,
-					effect[i].position.y - effect[i].size.y,
+					anniEffect[i].position.x + anniEffect[i].size.x,
+					anniEffect[i].position.y - anniEffect[i].size.y,
 
 					0, 0,
-					1, 1,
+					32, 32,
 
-					sampleTexture,
+					circleTexture,
 					WHITE
 				);
 			}
 		}
+
+		Novice::DrawQuad(
+			object.position.x - object.radius.x / 2,
+			object.position.y - object.radius.y / 2,
+
+			object.position.x + object.radius.x / 2,
+			object.position.y - object.radius.y / 2,
+
+			object.position.x - object.radius.x / 2,
+			object.position.y + object.radius.y / 2,
+
+			object.position.x + object.radius.x / 2,
+			object.position.y + object.radius.y / 2,
+
+			0, 0,
+			1, 1,
+
+			sampleTexture,
+			RED
+		);
+
 		/*********************************
 			描画処理ここまで
 		*********************************/

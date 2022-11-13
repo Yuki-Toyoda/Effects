@@ -21,7 +21,7 @@
 =================================*/
 
 /******** ウィンドウ名の指定 **********/
-const char kWindowTitle[] = "消滅エフェクト";
+const char kWindowTitle[] = "煙エフェクト";
 
 /******** ウィンドウサイズの指定 **********/
 const int kWinodowWidth = 1280; //x
@@ -59,6 +59,7 @@ struct Effect {
 	float amplitude;
 	float acceleration;
 	float theta;
+	float nextFrame;
 	float elapseFrame;
 	float time;
 	float easeTime;
@@ -91,6 +92,8 @@ const int maxEffects = 50;
 void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantity) {
 	if (effect.init == true) {
 
+		effect.nextFrame = 30.0f;
+
 		//位置等を初期化
 		effect.position = { My::RandomF(object.position.x - object.radius.x / 2, object.position.x + object.radius.x / 2, 1), My::RandomF(object.position.y - object.radius.y / 2, object.position.y + object.radius.y / 2, 1) };
 		effect.startPosition = { effect.position.x, effect.position.y };
@@ -110,14 +113,14 @@ void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantit
 		//エフェクト表示
 		effect.isEnd = false;
 
-		effectQuantity += 1;
+		//effectQuantity += 1;
 
 		//初期化フラグfalse
 		effect.init = false;
 
 	}
 
-	if (effect.size.x <= 0.0f) {
+	if (effect.elapseFrame >= 100) {
 
 		//エフェクト消去
 		effect.isEnd = true;
@@ -127,15 +130,13 @@ void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantit
 
 	}
 
-	if (effect.elapseFrame >= 30.0f) {
+	if (effect.elapseFrame == effect.nextFrame) {
 
 		next = true;
 
-		//経過フレーム初期化
-		effect.elapseFrame = 0.0f;
 	}
 
-	if (object.radius.x < 0.0f) {
+	if (effect.elapseFrame == 90) {
 		effectQuantity = 0;
 	}
 
@@ -200,6 +201,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			0.0f,
 			0.0f,
 			0.0f,
+			0.0f,
 			0xFF,
 			false,
 			true
@@ -208,7 +210,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Object object{
 		{640.0f, 360.0f},
-		{0.0f, 0.0f}
+		{10.0f, 10.0f}
 	};
 
 	/*********************************
@@ -228,17 +230,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			更新処理ここから
 		*********************************/
 
+		Novice::GetMousePosition(&mousePosX, &mousePosY);
+
+		object.position = { (float)mousePosX, (float)mousePosY };
+
 		if (Novice::IsTriggerMouse(0)) {
-
-			Novice::GetMousePosition(&mousePosX, &mousePosY);
-
-			object.position = { (float)mousePosX, (float)mousePosY };
-
-			object.radius = { 200.0f, 200.0f };
-			object.velocity = 1.0f;
-			object.acceleration = 0.05f;
 			next = true;
-
 		}
 
 
@@ -249,15 +246,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					next = false;
 				}
 			}
-		}
-
-		if (object.radius.x > 0) {
-			object.radius.x -= object.velocity;
-			object.radius.y -= object.velocity;
-			object.velocity += object.acceleration;
-		}
-		else {
-			object.radius.x = 0;
 		}
 
 		for (int i = 0; i < maxEffects; i++) {

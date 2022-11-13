@@ -130,7 +130,7 @@ void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantit
 
 	}
 
-	if (effect.elapseFrame = effect.nextFrame) {
+	if (effect.elapseFrame == effect.nextFrame) {
 
 		next = true;
 

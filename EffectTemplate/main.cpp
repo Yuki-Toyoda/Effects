@@ -92,14 +92,14 @@ const int maxEffects = 50;
 void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantity) {
 	if (effect.init == true) {
 
-		effect.nextFrame = 30.0f;
+		effect.nextFrame = 1.0f;
 
 		//位置等を初期化
 		effect.position = { My::RandomF(object.position.x - object.radius.x / 2, object.position.x + object.radius.x / 2, 1), My::RandomF(object.position.y - object.radius.y / 2, object.position.y + object.radius.y / 2, 1) };
 		effect.startPosition = { effect.position.x, effect.position.y };
 		effect.endPosition = { effect.startPosition.x, effect.position.y - My::RandomF(200.0f, 300.0f, 1) };
 
-		effect.size = { My::RandomF(5.0f, 7.5f, 0), effect.size.x };
+		effect.size = { My::RandomF(1.0f, 2.0f, 0), effect.size.x };
 		effect.startSize = { effect.size.x, effect.size.x };
 
 		effect.strength = My::RandomF(60.0f, 100.0f, 0);
@@ -120,7 +120,7 @@ void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantit
 
 	}
 
-	if (effect.elapseFrame >= 100) {
+	if (effect.elapseFrame >= 50.0f) {
 
 		//エフェクト消去
 		effect.isEnd = true;
@@ -131,9 +131,7 @@ void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantit
 	}
 
 	if (effect.elapseFrame == effect.nextFrame) {
-
 		next = true;
-
 	}
 
 	if (effect.elapseFrame == 90) {

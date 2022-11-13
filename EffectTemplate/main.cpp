@@ -11,24 +11,24 @@
 =================================*/
 
 /*********************************
-    大見出しコピペ
+	大見出しコピペ
 *********************************/
 
 /******** 小見出しコピペ用 **********/
 
 /*================================
-    コピペ用↑
+	コピペ用↑
 =================================*/
 
 /******** ウィンドウ名の指定 **********/
-const char kWindowTitle[] = "エフェクト";
+const char kWindowTitle[] = "消滅エフェクト";
 
 /******** ウィンドウサイズの指定 **********/
 const int kWinodowWidth = 1280; //x
 const int kWindowHeight = 720; //y
 
 /*********************************
-    定数の宣言ここまで
+	定数の宣言ここまで
 *********************************/
 
 /*********************************
@@ -50,8 +50,13 @@ const int kWindowHeight = 720; //y
 struct Effect {
 	Vector2D position;
 	Vector2D startPosition;
+	Vector2D endPosition;
 	Vector2D size;
+	Vector2D startSize;
 	Vector2D velocity;
+	float startStrength;
+	float strength;
+	float amplitude;
 	float acceleration;
 	float theta;
 	float elapseFrame;
@@ -63,6 +68,17 @@ struct Effect {
 	bool isEnd;
 };
 
+struct Object {
+	Vector2D position;
+	Vector2D radius;
+	Vector2D startRadius;
+	float velocity;
+	float acceleration;
+};
+
+//表示可能エフェクト数
+const int maxEffects = 50;
+
 /*********************************
 	構造体宣言ここまで
 *********************************/
@@ -72,28 +88,36 @@ struct Effect {
 *********************************/
 
 /******** エフェクト更新処理 **********/
-void EffectUpdate(Effect& effect) {
-
+void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantity) {
 	if (effect.init == true) {
 
-		//エフェクトの位置、速度、サイズ初期化
-		effect.position = { 640.0f, 360.0f };
-		effect.velocity = { My::RandomF(5.0f, 7.0f, 1), My::RandomF(5.0f, 7.0f, 1) };
-		effect.size = { 5, 5 };
+		//位置等を初期化
+		effect.position = { My::RandomF(object.position.x - object.radius.x / 2, object.position.x + object.radius.x / 2, 1), My::RandomF(object.position.y - object.radius.y / 2, object.position.y + object.radius.y / 2, 1) };
+		effect.startPosition = { effect.position.x, effect.position.y };
+		effect.endPosition = { effect.startPosition.x, effect.position.y - My::RandomF(200.0f, 300.0f, 1) };
 
-		//エフェクトが向かう方向をランダムにする
-		effect.theta = My::Random(0, 180);
-		effect.theta = effect.theta * (M_PI / 180.0f);
+		effect.size = { My::RandomF(5.0f, 7.5f, 0), effect.size.x };
+		effect.startSize = { effect.size.x, effect.size.x };
+
+		effect.strength = My::RandomF(60.0f, 100.0f, 0);
+		effect.startStrength = effect.strength;
+		effect.amplitude = 0.5f;
+
+		effect.time = 0.0f;
+
+		next = false;
 
 		//エフェクト表示
 		effect.isEnd = false;
+
+		effectQuantity += 1;
 
 		//初期化フラグfalse
 		effect.init = false;
 
 	}
 
-	if (effect.elapseFrame >= 100) {
+	if (effect.size.x <= 0.0f) {
 
 		//エフェクト消去
 		effect.isEnd = true;
@@ -103,7 +127,23 @@ void EffectUpdate(Effect& effect) {
 
 	}
 
+	if (effect.elapseFrame >= 30.0f) {
+
+		next = true;
+
+		//経過フレーム初期化
+		effect.elapseFrame = 0.0f;
+	}
+
+	if (object.radius.x < 0.0f) {
+		effectQuantity = 0;
+	}
+
 	if (effect.isEnd == false) {
+
+		//粒子エフェクトのイージング処理
+		effect.time += 0.01f;
+		effect.easeTime = 1.0f - powf(1.0f - effect.time, 3.0f);
 
 		//経過フレーム加算
 		effect.elapseFrame += 1.0f;
@@ -123,8 +163,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Novice::Initialize(kWindowTitle, kWinodowWidth, kWindowHeight);
 
 	// キー入力結果を受け取る箱
-	char keys[256] = {0};
-	char preKeys[256] = {0};
+	char keys[256] = { 0 };
+	char preKeys[256] = { 0 };
 
 	/*********************************
 		変数宣言ここから
@@ -135,8 +175,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	int circleTexture = Novice::LoadTexture("./circle.png");
 
 	/******** エフェクト関係 **********/
-	//表示可能エフェクト数
-	const int maxEffects = 30;
+
+	int effectQuantity = 0;
+	bool next = false;
+
+	int mousePosX = 0;
+	int mousePosY = 0;
 
 	//エフェクト
 	Effect effect[maxEffects];
@@ -145,7 +189,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
+			{0.0f, 0.0f},
 			{1.0f, 1.0f},
+			{1.0f, 1.0f},
+			0.0f,
+			0.0f,
+			0.0f,
 			0.0f,
 			0.0f,
 			0.0f,
@@ -156,6 +205,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			true
 		};
 	}
+
+	Object object{
+		{640.0f, 360.0f},
+		{0.0f, 0.0f}
+	};
+
 	/*********************************
 		変数宣言ここまで
 	*********************************/
@@ -173,15 +228,43 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			更新処理ここから
 		*********************************/
 
-		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE]) {
+		if (Novice::IsTriggerMouse(0)) {
+
+			Novice::GetMousePosition(&mousePosX, &mousePosY);
+
+			object.position = { (float)mousePosX, (float)mousePosY };
+
+			object.radius = { 200.0f, 200.0f };
+			object.velocity = 1.0f;
+			object.acceleration = 0.05f;
+			next = true;
+
+		}
+
+
+		if (next == true) {
 			for (int i = 0; i < maxEffects; i++) {
-				effect[i].init = true;
+				if (next == true && effect[i].isEnd == true) {
+					effect[i].init = true;
+					next = false;
+				}
 			}
 		}
 
-		for (int i = 0; i < maxEffects; i++) {
-			EffectUpdate(effect[i]);
+		if (object.radius.x > 0) {
+			object.radius.x -= object.velocity;
+			object.radius.y -= object.velocity;
+			object.velocity += object.acceleration;
 		}
+		else {
+			object.radius.x = 0;
+		}
+
+		for (int i = 0; i < maxEffects; i++) {
+			EffectUpdate(effect[i], object, next, effectQuantity);
+		}
+
+		Novice::ScreenPrintf(0, 10, "Quantity : %d", effectQuantity);
 
 		/*********************************
 			更新処理ここまで
@@ -190,6 +273,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/*********************************
 			描画処理ここから
 		*********************************/
+
+		Novice::DrawQuad(
+			object.position.x - object.radius.x / 2,
+			object.position.y - object.radius.y / 2,
+
+			object.position.x + object.radius.x / 2,
+			object.position.y - object.radius.y / 2,
+
+			object.position.x - object.radius.x / 2,
+			object.position.y + object.radius.y / 2,
+
+			object.position.x + object.radius.x / 2,
+			object.position.y + object.radius.y / 2,
+
+			0, 0,
+			1, 1,
+
+			sampleTexture,
+			RED
+		);
+
 		/******** エフェクト描画 **********/
 		for (int i = 0; i < maxEffects; i++) {
 			if (!effect[i].isEnd) {
@@ -207,13 +311,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					effect[i].position.y - effect[i].size.y,
 
 					0, 0,
-					1, 1,
+					32, 32,
 
-					sampleTexture,
-					WHITE
+					circleTexture,
+					0xFFFFFFFF00 + effect[i].currentAlpha
 				);
 			}
 		}
+
 		/*********************************
 			描画処理ここまで
 		*********************************/

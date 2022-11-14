@@ -53,6 +53,7 @@ struct Effect {
 	Vector2D endPosition;
 	Vector2D size;
 	Vector2D startSize;
+	Vector2D endSize;
 	Vector2D velocity;
 	float startStrength;
 	float strength;
@@ -65,6 +66,7 @@ struct Effect {
 	float easeTime;
 	unsigned int currentAlpha;
 
+	bool levitation;
 	bool init;
 	bool isEnd;
 };
@@ -101,12 +103,17 @@ void SmokeEffectUpdate(Effect& smokeEffect, Object& object, bool& next, int& eff
 
 		smokeEffect.size = { My::RandomF(1.0f, 2.0f, 0), smokeEffect.size.x };
 		smokeEffect.startSize = { smokeEffect.size.x, smokeEffect.size.x };
+		smokeEffect.endSize = { My::RandomF(25.0f, 30.0f, 0), smokeEffect.endSize.x };
 
 		smokeEffect.strength = My::RandomF(60.0f, 100.0f, 0);
 		smokeEffect.startStrength = smokeEffect.strength;
 		smokeEffect.amplitude = 0.5f;
 
+		smokeEffect.currentAlpha = 0x01;
+
 		smokeEffect.time = 0.0f;
+
+		smokeEffect.levitation = false;
 
 		next = false;
 
@@ -140,10 +147,21 @@ void SmokeEffectUpdate(Effect& smokeEffect, Object& object, bool& next, int& eff
 
 	if (smokeEffect.isEnd == false) {
 
-		//粒子エフェクトのイージング処理
-		smokeEffect.time += 0.01f;
-		smokeEffect.easeTime = 1.0f - powf(1.0f - smokeEffect.time, 3.0f);
+		if (smokeEffect.time >= 1.0f && smokeEffect.levitation == false) {
+			//粒子エフェクトのイージング処理
+			smokeEffect.time += 0.01f;
+			smokeEffect.easeTime = 1.0f - powf(1.0f - smokeEffect.time, 3.0f);
+		}
+		else if (smokeEffect.time >= 1.0f && smokeEffect.levitation == true) {
+			//粒子エフェクトのイージング処理
+			smokeEffect.time += 0.01f;
+			smokeEffect.easeTime = 1.0f - powf(1.0f - smokeEffect.time, 3.0f);
 
+		}
+		else if(smokeEffect.time <= 1.0f && smokeEffect.levitation == false) {
+			smokeEffect.levitation = true;
+			smokeEffect.time = 0.0f;
+		}
 		//経過フレーム加算
 		smokeEffect.elapseFrame += 1.0f;
 
@@ -191,6 +209,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			{0.0f, 0.0f},
 			{1.0f, 1.0f},
 			{1.0f, 1.0f},
+			{1.0f, 1.0f},
 			0.0f,
 			0.0f,
 			0.0f,
@@ -201,6 +220,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			0.0f,
 			0.0f,
 			0xFF,
+			false,
 			false,
 			true
 		};

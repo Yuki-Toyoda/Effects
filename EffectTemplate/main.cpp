@@ -135,6 +135,7 @@ void SmokeEffectUpdate(Effect& smokeEffect, Object& object, bool& next) {
 
 	}
 
+	//一定フレーム経過したら次の粒子を出す
 	if (smokeEffect.elapseFrame == smokeEffect.nextFrame) {
 		next = true;
 	}
@@ -145,10 +146,12 @@ void SmokeEffectUpdate(Effect& smokeEffect, Object& object, bool& next) {
 			//粒子エフェクトのイージング処理
 			smokeEffect.time += 0.015f;
 			smokeEffect.easeTime = 1.0f - powf(1.0f - smokeEffect.time, 3.0f);
+
 			//粒子エフェクトのサイズ変更
 			smokeEffect.size.x = (1.0 - smokeEffect.easeTime) * smokeEffect.startSize.x + smokeEffect.easeTime * smokeEffect.endSize.x;
 			smokeEffect.size.y = (1.0 - smokeEffect.easeTime) * smokeEffect.startSize.y + smokeEffect.easeTime * smokeEffect.endSize.y;
 
+			//透明度変更
 			smokeEffect.currentAlpha = (1.0 - smokeEffect.easeTime) * 0x01 + smokeEffect.easeTime * 0xFF;
 
 		}
@@ -164,7 +167,7 @@ void SmokeEffectUpdate(Effect& smokeEffect, Object& object, bool& next) {
 
 		}
 
-
+		//エフェクトを徐々に消滅させる
 		if(smokeEffect.time >= 0.4f && smokeEffect.levitation == false) {
 			smokeEffect.levitation = true;
 			smokeEffect.time = 0.0f;

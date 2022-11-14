@@ -94,14 +94,14 @@ const int maxEffects = 50;
 void SmokeEffectUpdate(Effect& smokeEffect, Object& object, bool& next, int& effectQuantity) {
 	if (smokeEffect.init == true) {
 
-		smokeEffect.nextFrame = 1.0f;
+		smokeEffect.nextFrame = 3.0f;
 
 		//位置等を初期化
-		smokeEffect.position = { My::RandomF(object.position.x - object.radius.x / 2, object.position.x + object.radius.x / 2, 1), My::RandomF(object.position.y - object.radius.y / 2, object.position.y + object.radius.y / 2, 1) };
+		smokeEffect.position = { My::RandomF(object.position.x - object.radius.x, object.position.x + object.radius.x, 1), My::RandomF(object.position.y - object.radius.y, object.position.y + object.radius.y, 1) };
 		smokeEffect.startPosition = { smokeEffect.position.x, smokeEffect.position.y };
-		smokeEffect.endPosition = { smokeEffect.startPosition.x, smokeEffect.position.y - My::RandomF(200.0f, 300.0f, 1) };
+		smokeEffect.endPosition = { smokeEffect.startPosition.x, smokeEffect.position.y + My::RandomF(200.0f, 300.0f, 1) };
 
-		smokeEffect.size = { My::RandomF(1.0f, 2.0f, 0), smokeEffect.size.x };
+		smokeEffect.size = { My::RandomF(10.0f, 15.0f, 0), smokeEffect.size.x };
 		smokeEffect.startSize = { smokeEffect.size.x, smokeEffect.size.x };
 		smokeEffect.endSize = { My::RandomF(25.0f, 30.0f, 0), smokeEffect.endSize.x };
 
@@ -127,7 +127,7 @@ void SmokeEffectUpdate(Effect& smokeEffect, Object& object, bool& next, int& eff
 
 	}
 
-	if (smokeEffect.elapseFrame >= 50.0f) {
+	if (smokeEffect.currentAlpha == 0x00) {
 
 		//エフェクト消去
 		smokeEffect.isEnd = true;
@@ -147,21 +147,32 @@ void SmokeEffectUpdate(Effect& smokeEffect, Object& object, bool& next, int& eff
 
 	if (smokeEffect.isEnd == false) {
 
-		if (smokeEffect.time >= 1.0f && smokeEffect.levitation == false) {
+		if (smokeEffect.time < 0.8f && smokeEffect.levitation == false) {
 			//粒子エフェクトのイージング処理
 			smokeEffect.time += 0.01f;
 			smokeEffect.easeTime = 1.0f - powf(1.0f - smokeEffect.time, 3.0f);
-		}
-		else if (smokeEffect.time >= 1.0f && smokeEffect.levitation == true) {
-			//粒子エフェクトのイージング処理
-			smokeEffect.time += 0.01f;
-			smokeEffect.easeTime = 1.0f - powf(1.0f - smokeEffect.time, 3.0f);
+			//粒子エフェクトのサイズ変更
+			smokeEffect.size.x = (1.0 - smokeEffect.easeTime) * smokeEffect.startSize.x + smokeEffect.easeTime * smokeEffect.endSize.x;
+			smokeEffect.size.y = (1.0 - smokeEffect.easeTime) * smokeEffect.startSize.y + smokeEffect.easeTime * smokeEffect.endSize.y;
+
+			smokeEffect.currentAlpha = (1.0 - smokeEffect.easeTime) * 0x01 + smokeEffect.easeTime * 0xFF;
 
 		}
-		else if(smokeEffect.time <= 1.0f && smokeEffect.levitation == false) {
+		else if (smokeEffect.time < 1.0f && smokeEffect.levitation == true) {
+			//粒子エフェクトのイージング処理
+			smokeEffect.time += 0.02f;
+			smokeEffect.easeTime = 1.0f - powf(1.0f - smokeEffect.time, 3.0f);
+
+			smokeEffect.currentAlpha = (1.0 - smokeEffect.easeTime) * 0xFF + smokeEffect.easeTime * 0x00;
+
+		}
+
+
+		if(smokeEffect.time >= 0.8f && smokeEffect.levitation == false) {
 			smokeEffect.levitation = true;
 			smokeEffect.time = 0.0f;
 		}
+
 		//経過フレーム加算
 		smokeEffect.elapseFrame += 1.0f;
 
@@ -228,7 +239,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Object object{
 		{640.0f, 360.0f},
-		{10.0f, 10.0f}
+		{20.0f, 20.0f}
 	};
 
 	/*********************************
@@ -270,7 +281,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			SmokeEffectUpdate(effect[i], object, next, effectQuantity);
 		}
 
-		Novice::ScreenPrintf(0, 10, "Quantity : %d", effectQuantity);
+		Novice::ScreenPrintf(0, 10, "ve : %d", effect[0].levitation);
+		Novice::ScreenPrintf(0, 30, "ve : %d", effect[1].levitation);
+		Novice::ScreenPrintf(0, 50, "ve : %d", effect[2].levitation);
+		Novice::ScreenPrintf(0, 70, "ve : %d", effect[3].levitation);
+		Novice::ScreenPrintf(0, 90, "ve : %d", effect[4].levitation);
 
 		/*********************************
 			更新処理ここまで

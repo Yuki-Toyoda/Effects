@@ -164,6 +164,7 @@ void SmokeEffectUpdate(Effect& smokeEffect, Object& object, bool& next, int& eff
 			smokeEffect.easeTime = 1.0f - powf(1.0f - smokeEffect.time, 3.0f);
 
 			smokeEffect.currentAlpha = (1.0 - smokeEffect.easeTime) * 0xFF + smokeEffect.easeTime * 0x00;
+			smokeEffect.position.y = (1.0 - smokeEffect.easeTime) * smokeEffect.startPosition.y + smokeEffect.easeTime * smokeEffect.endPosition.y;
 
 		}
 

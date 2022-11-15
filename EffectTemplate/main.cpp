@@ -66,6 +66,7 @@ struct Effect {
 	float easeTime;
 	unsigned int currentAlpha;
 
+	bool Alpha;
 	bool init;
 	bool isEnd;
 };
@@ -100,12 +101,15 @@ void BoosterEffectUpdate(Effect& boosterEffect, Object& object, bool& next, int&
 		boosterEffect.startPosition = { boosterEffect.position.x, boosterEffect.position.y };
 		boosterEffect.endPosition = { boosterEffect.startPosition.x, boosterEffect.position.y - My::RandomF(200.0f, 300.0f, 1) };
 
-		boosterEffect.size = { My::RandomF(5.0f, 7.5f, 0), boosterEffect.size.x };
+		boosterEffect.size = { 1.0f, 1.0f };
 		boosterEffect.startSize = { boosterEffect.size.x, boosterEffect.size.x };
+		boosterEffect.endSize = { My::RandomF(10.0f, 15.0f, 1), boosterEffect.endSize.x};
 
 		boosterEffect.strength = My::RandomF(60.0f, 100.0f, 0);
 		boosterEffect.startStrength = boosterEffect.strength;
 		boosterEffect.amplitude = 0.5f;
+
+		boosterEffect.currentAlpha = 0x01;
 
 		boosterEffect.time = 0.0f;
 
@@ -121,7 +125,7 @@ void BoosterEffectUpdate(Effect& boosterEffect, Object& object, bool& next, int&
 
 	}
 
-	if (boosterEffect.elapseFrame >= 100) {
+	if (boosterEffect.currentAlpha == 0x00) {
 
 		//エフェクト消去
 		boosterEffect.isEnd = true;
@@ -137,15 +141,16 @@ void BoosterEffectUpdate(Effect& boosterEffect, Object& object, bool& next, int&
 
 	}
 
-	if (boosterEffect.elapseFrame == 90) {
-		effectQuantity = 0;
-	}
-
 	if (boosterEffect.isEnd == false) {
 
 		//粒子エフェクトのイージング処理
 		boosterEffect.time += 0.01f;
 		boosterEffect.easeTime = 1.0f - powf(1.0f - boosterEffect.time, 3.0f);
+
+
+
+		boosterEffect.size = (1.0 - boosterEffect.easeTime) * boosterEffect.startSize + boosterEffect.easeTime * boosterEffect.endSize;
+		boosterEffect.currentAlpha = (1.0 - boosterEffect.easeTime) * 0x01 + boosterEffect.easeTime * 0xFF;
 
 		//経過フレーム加算
 		boosterEffect.elapseFrame += 1.0f;
@@ -205,6 +210,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			0.0f,
 			0.0f,
 			0xFF,
+			false,
 			false,
 			true
 		};

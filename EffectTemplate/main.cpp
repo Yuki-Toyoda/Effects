@@ -89,65 +89,65 @@ const int maxEffects = 50;
 *********************************/
 
 /******** エフェクト更新処理 **********/
-void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantity) {
-	if (effect.init == true) {
+void EffectUpdate(Effect& generateEffect, Object& object, bool& next, int& effectQuantity) {
+	if (generateEffect.init == true) {
 		
-		effect.nextFrame = 30;
+		generateEffect.nextFrame = 30;
 
 		//位置等を初期化
-		effect.position = { My::RandomF(object.position.x - object.radius.x / 2, object.position.x + object.radius.x / 2, 1), My::RandomF(object.position.y - object.radius.y / 2, object.position.y + object.radius.y / 2, 1) };
-		effect.startPosition = { effect.position.x, effect.position.y };
-		effect.endPosition = { effect.startPosition.x, effect.position.y - My::RandomF(200.0f, 300.0f, 1) };
+		generateEffect.position = { My::RandomF(object.position.x - object.radius.x / 2, object.position.x + object.radius.x / 2, 1), My::RandomF(object.position.y - object.radius.y / 2, object.position.y + object.radius.y / 2, 1) };
+		generateEffect.startPosition = { generateEffect.position.x, generateEffect.position.y };
+		generateEffect.endPosition = { generateEffect.startPosition.x, generateEffect.position.y - My::RandomF(200.0f, 300.0f, 1) };
 
-		effect.size = { My::RandomF(5.0f, 7.5f, 0), effect.size.x };
-		effect.startSize = { effect.size.x, effect.size.x };
+		generateEffect.size = { My::RandomF(5.0f, 7.5f, 0), generateEffect.size.x };
+		generateEffect.startSize = { generateEffect.size.x, generateEffect.size.x };
 
-		effect.strength = My::RandomF(60.0f, 100.0f, 0);
-		effect.startStrength = effect.strength;
-		effect.amplitude = 0.5f;
+		generateEffect.strength = My::RandomF(60.0f, 100.0f, 0);
+		generateEffect.startStrength = generateEffect.strength;
+		generateEffect.amplitude = 0.5f;
 
-		effect.time = 0.0f;
+		generateEffect.time = 0.0f;
 
 		next = false;
 
 		//エフェクト表示
-		effect.isEnd = false;
+		generateEffect.isEnd = false;
 
 		//effectQuantity += 1;
 
 		//初期化フラグfalse
-		effect.init = false;
+		generateEffect.init = false;
 
 	}
 
-	if (effect.elapseFrame >= 100) {
+	if (generateEffect.elapseFrame >= 100) {
 
 		//エフェクト消去
-		effect.isEnd = true;
+		generateEffect.isEnd = true;
 
 		//経過フレーム初期化
-		effect.elapseFrame = 0.0f;
+		generateEffect.elapseFrame = 0.0f;
 
 	}
 
-	if (effect.elapseFrame == effect.nextFrame) {
+	if (generateEffect.elapseFrame == generateEffect.nextFrame) {
 
 		next = true;
 
 	}
 
-	if (effect.elapseFrame == 90) {
+	if (generateEffect.elapseFrame == 90) {
 		effectQuantity = 0;
 	}
 
-	if (effect.isEnd == false) {
+	if (generateEffect.isEnd == false) {
 
 		//粒子エフェクトのイージング処理
-		effect.time += 0.01f;
-		effect.easeTime = 1.0f - powf(1.0f - effect.time, 3.0f);
+		generateEffect.time += 0.01f;
+		generateEffect.easeTime = 1.0f - powf(1.0f - generateEffect.time, 3.0f);
 
 		//経過フレーム加算
-		effect.elapseFrame += 1.0f;
+		generateEffect.elapseFrame += 1.0f;
 
 	}
 
@@ -184,9 +184,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	int mousePosY = 0;
 
 	//エフェクト
-	Effect effect[maxEffects];
+	Effect generateEffect[maxEffects];
 	for (int i = 0; i < maxEffects; i++) {
-		effect[i] = {
+		generateEffect[i] = {
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
@@ -241,8 +241,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		if (next == true) {
 			for (int i = 0; i < maxEffects; i++) {
-				if (next == true && effect[i].isEnd == true) {
-					effect[i].init = true;
+				if (next == true && generateEffect[i].isEnd == true) {
+					generateEffect[i].init = true;
 					next = false;
 				}
 			}
@@ -258,7 +258,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 
 		for (int i = 0; i < maxEffects; i++) {
-			EffectUpdate(effect[i], object, next, effectQuantity);
+			EffectUpdate(generateEffect[i], object, next, effectQuantity);
 		}
 
 		Novice::ScreenPrintf(0, 10, "Quantity : %d", effectQuantity);
@@ -293,25 +293,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		/******** エフェクト描画 **********/
 		for (int i = 0; i < maxEffects; i++) {
-			if (!effect[i].isEnd) {
+			if (!generateEffect[i].isEnd) {
 				Novice::DrawQuad(
-					effect[i].position.x - effect[i].size.x,
-					effect[i].position.y + effect[i].size.y,
+					generateEffect[i].position.x - generateEffect[i].size.x,
+					generateEffect[i].position.y + generateEffect[i].size.y,
 
-					effect[i].position.x + effect[i].size.x,
-					effect[i].position.y + effect[i].size.y,
+					generateEffect[i].position.x + generateEffect[i].size.x,
+					generateEffect[i].position.y + generateEffect[i].size.y,
 
-					effect[i].position.x - effect[i].size.x,
-					effect[i].position.y - effect[i].size.y,
+					generateEffect[i].position.x - generateEffect[i].size.x,
+					generateEffect[i].position.y - generateEffect[i].size.y,
 
-					effect[i].position.x + effect[i].size.x,
-					effect[i].position.y - effect[i].size.y,
+					generateEffect[i].position.x + generateEffect[i].size.x,
+					generateEffect[i].position.y - generateEffect[i].size.y,
 
 					0, 0,
 					32, 32,
 
 					circleTexture,
-					0xFFFFFFFF00 + effect[i].currentAlpha
+					0xFFFFFFFF00 + generateEffect[i].currentAlpha
 				);
 			}
 		}

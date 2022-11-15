@@ -180,9 +180,6 @@ void BoosterEffectUpdate(Effect& boosterEffect, Object& object, bool& next) {
 
 			boosterEffect.position.x = (1.0 - boosterEffect.easeMoveTime) * boosterEffect.startPosition.x + boosterEffect.easeMoveTime * boosterEffect.endPosition.x;
 			boosterEffect.position.y = (1.0 - boosterEffect.easeMoveTime) * boosterEffect.startPosition.y + boosterEffect.easeMoveTime * boosterEffect.endPosition.y;
-
-			boosterEffect.color = (1.0 - boosterEffect.easeAlphaTime) * 0xFFFFFFFF + boosterEffect.easeAlphaTime * 0xff4500FF;
-
 		}
 
 		//エフェクトを徐々に消滅させる

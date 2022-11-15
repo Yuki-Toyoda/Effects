@@ -62,11 +62,14 @@ struct Effect {
 	float theta;
 	float nextFrame;
 	float elapseFrame;
-	float time;
-	float easeTime;
+	float alphaTime;
+	float easeAlphaTime;
+	float moveTime;
+	float easeMoveTime;
+	unsigned int color;
 	unsigned int currentAlpha;
 
-	bool Alpha;
+	bool levitation;
 	bool init;
 	bool isEnd;
 };
@@ -91,19 +94,19 @@ const int maxEffects = 50;
 *********************************/
 
 /******** エフェクト更新処理 **********/
-void BoosterEffectUpdate(Effect& boosterEffect, Object& object, bool& next, int& effectQuantity) {
+void BoosterEffectUpdate(Effect& boosterEffect, Object& object, bool& next) {
 	if (boosterEffect.init == true) {
 		
-		boosterEffect.nextFrame = 30;
+		boosterEffect.nextFrame = 1;
 
 		//位置等を初期化
-		boosterEffect.position = { My::RandomF(object.position.x - object.radius.x / 2, object.position.x + object.radius.x / 2, 1), My::RandomF(object.position.y - object.radius.y / 2, object.position.y + object.radius.y / 2, 1) };
+		boosterEffect.position = { My::RandomF(object.position.x - object.radius.x, object.position.x + object.radius.x, 1), My::RandomF(object.position.y, object.position.y + object.radius.y * 2, 1) };
 		boosterEffect.startPosition = { boosterEffect.position.x, boosterEffect.position.y };
-		boosterEffect.endPosition = { boosterEffect.startPosition.x, boosterEffect.position.y - My::RandomF(200.0f, 300.0f, 1) };
+		boosterEffect.endPosition = { My::RandomF(boosterEffect.startPosition.x - 30.0f, boosterEffect.startPosition.x + 30.0f, 1), boosterEffect.position.y + My::RandomF(200.0f, 250.0f, 1) };
 
-		boosterEffect.size = { 1.0f, 1.0f };
-		boosterEffect.startSize = { boosterEffect.size.x, boosterEffect.size.x };
-		boosterEffect.endSize = { My::RandomF(10.0f, 15.0f, 1), boosterEffect.endSize.x};
+		boosterEffect.size = { 3.0f, 3.0f };
+		boosterEffect.startSize = { boosterEffect.size.x, boosterEffect.size.y };
+		boosterEffect.endSize = { My::RandomF(15.0f, 20.0f, 1), boosterEffect.endSize.x};
 
 		boosterEffect.strength = My::RandomF(60.0f, 100.0f, 0);
 		boosterEffect.startStrength = boosterEffect.strength;
@@ -111,7 +114,10 @@ void BoosterEffectUpdate(Effect& boosterEffect, Object& object, bool& next, int&
 
 		boosterEffect.currentAlpha = 0x01;
 
-		boosterEffect.time = 0.0f;
+		boosterEffect.alphaTime = 0.0f;
+		boosterEffect.moveTime = 0.0f;
+
+		boosterEffect.levitation = false;
 
 		next = false;
 
@@ -143,14 +149,47 @@ void BoosterEffectUpdate(Effect& boosterEffect, Object& object, bool& next, int&
 
 	if (boosterEffect.isEnd == false) {
 
-		//粒子エフェクトのイージング処理
-		boosterEffect.time += 0.01f;
-		boosterEffect.easeTime = 1.0f - powf(1.0f - boosterEffect.time, 3.0f);
+		if (boosterEffect.alphaTime < 1.0f && boosterEffect.levitation == false) {
+			//粒子エフェクトのイージング処理
+			boosterEffect.alphaTime += 0.03f;
+			boosterEffect.easeAlphaTime = 1.0f - powf(1.0f - boosterEffect.alphaTime, 3.0f);
 
+			//粒子エフェクトのサイズ変更
+			boosterEffect.size.x = (1.0 - boosterEffect.easeAlphaTime) * boosterEffect.startSize.x + boosterEffect.easeAlphaTime * boosterEffect.endSize.x;
+			boosterEffect.size.y = (1.0 - boosterEffect.easeAlphaTime) * boosterEffect.startSize.y + boosterEffect.easeAlphaTime * boosterEffect.endSize.y;
 
+			//透明度変更
+			boosterEffect.currentAlpha = (1.0 - boosterEffect.easeAlphaTime) * 0x05 + boosterEffect.easeAlphaTime * 0xEF;
 
-		boosterEffect.size = (1.0 - boosterEffect.easeTime) * boosterEffect.startSize + boosterEffect.easeTime * boosterEffect.endSize;
-		boosterEffect.currentAlpha = (1.0 - boosterEffect.easeTime) * 0x01 + boosterEffect.easeTime * 0xFF;
+		}
+		else if (boosterEffect.alphaTime < 1.0f && boosterEffect.levitation == true) {
+			//粒子エフェクトのイージング処理
+			boosterEffect.alphaTime += 0.01f;
+			boosterEffect.easeAlphaTime = 1.0f - powf(1.0f - boosterEffect.alphaTime, 3.0f);
+
+			boosterEffect.currentAlpha = (1.0 - boosterEffect.easeAlphaTime) * 0xEF + boosterEffect.easeAlphaTime * 0x00;
+
+			boosterEffect.easeAlphaTime = boosterEffect.alphaTime * boosterEffect.alphaTime;
+
+		}
+
+		if (boosterEffect.moveTime < 1.0f) {
+
+			boosterEffect.moveTime += 0.01f;
+			boosterEffect.easeMoveTime = 1.0f - powf(1.0f - boosterEffect.moveTime, 3.0f);
+
+			boosterEffect.position.x = (1.0 - boosterEffect.easeMoveTime) * boosterEffect.startPosition.x + boosterEffect.easeMoveTime * boosterEffect.endPosition.x;
+			boosterEffect.position.y = (1.0 - boosterEffect.easeMoveTime) * boosterEffect.startPosition.y + boosterEffect.easeMoveTime * boosterEffect.endPosition.y;
+
+			boosterEffect.color = (1.0 - boosterEffect.easeAlphaTime) * 0xFFFFFFFF + boosterEffect.easeAlphaTime * 0xff4500FF;
+
+		}
+
+		//エフェクトを徐々に消滅させる
+		if (boosterEffect.alphaTime >= 0.3f && boosterEffect.levitation == false) {
+			boosterEffect.levitation = true;
+			boosterEffect.alphaTime = 0.0f;
+		}
 
 		//経過フレーム加算
 		boosterEffect.elapseFrame += 1.0f;
@@ -181,9 +220,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	int sampleTexture = Novice::LoadTexture("white1x1.png");
 	int circleTexture = Novice::LoadTexture("./circle.png");
 
+	int trigger = false;
+
 	/******** エフェクト関係 **********/
 
-	int effectQuantity = 0;
 	bool next = false;
 
 	int mousePosX = 0;
@@ -209,6 +249,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			0.0f,
 			0.0f,
 			0.0f,
+			0.0f,
+			0.0f,
+			0xFFFFFFFF,
 			0xFF,
 			false,
 			false,
@@ -266,10 +309,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 
 		for (int i = 0; i < maxEffects; i++) {
-			BoosterEffectUpdate(effect[i], object, next, effectQuantity);
+			BoosterEffectUpdate(effect[i], object, next);
 		}
-
-		Novice::ScreenPrintf(0, 10, "Quantity : %d", effectQuantity);
 
 		/*********************************
 			更新処理ここまで
@@ -278,6 +319,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/*********************************
 			描画処理ここから
 		*********************************/
+
+		Novice::SetBlendMode(kBlendModeNormal);
+
+		Novice::DrawBox(
+			0, 0,
+			1280, 720,
+			0.0f,
+			BLACK,
+			kFillModeSolid
+		);
 
 		Novice::DrawQuad(
 			object.position.x - object.radius.x / 2,
@@ -296,10 +347,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			1, 1,
 
 			sampleTexture,
-			RED
+			WHITE
 		);
 
 		/******** エフェクト描画 **********/
+
+		Novice::SetBlendMode(kBlendModeAdd);
+
 		for (int i = 0; i < maxEffects; i++) {
 			if (!effect[i].isEnd) {
 				Novice::DrawQuad(
@@ -323,6 +377,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				);
 			}
 		}
+
+		Novice::SetBlendMode(kBlendModeNormal);
+
+		Novice::ScreenPrintf(0, 10, "frame : %4.2f", effect[0].elapseFrame);
 
 		/*********************************
 			描画処理ここまで

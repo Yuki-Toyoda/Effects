@@ -53,6 +53,7 @@ struct Effect {
 	Vector2D endPosition;
 	Vector2D size;
 	Vector2D startSize;
+	Vector2D endSize;
 	Vector2D velocity;
 	float startStrength;
 	float strength;
@@ -89,65 +90,65 @@ const int maxEffects = 50;
 *********************************/
 
 /******** エフェクト更新処理 **********/
-void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantity) {
-	if (effect.init == true) {
+void BoosterEffectUpdate(Effect& boosterEffect, Object& object, bool& next, int& effectQuantity) {
+	if (boosterEffect.init == true) {
 		
-		effect.nextFrame = 30;
+		boosterEffect.nextFrame = 30;
 
 		//位置等を初期化
-		effect.position = { My::RandomF(object.position.x - object.radius.x / 2, object.position.x + object.radius.x / 2, 1), My::RandomF(object.position.y - object.radius.y / 2, object.position.y + object.radius.y / 2, 1) };
-		effect.startPosition = { effect.position.x, effect.position.y };
-		effect.endPosition = { effect.startPosition.x, effect.position.y - My::RandomF(200.0f, 300.0f, 1) };
+		boosterEffect.position = { My::RandomF(object.position.x - object.radius.x / 2, object.position.x + object.radius.x / 2, 1), My::RandomF(object.position.y - object.radius.y / 2, object.position.y + object.radius.y / 2, 1) };
+		boosterEffect.startPosition = { boosterEffect.position.x, boosterEffect.position.y };
+		boosterEffect.endPosition = { boosterEffect.startPosition.x, boosterEffect.position.y - My::RandomF(200.0f, 300.0f, 1) };
 
-		effect.size = { My::RandomF(5.0f, 7.5f, 0), effect.size.x };
-		effect.startSize = { effect.size.x, effect.size.x };
+		boosterEffect.size = { My::RandomF(5.0f, 7.5f, 0), boosterEffect.size.x };
+		boosterEffect.startSize = { boosterEffect.size.x, boosterEffect.size.x };
 
-		effect.strength = My::RandomF(60.0f, 100.0f, 0);
-		effect.startStrength = effect.strength;
-		effect.amplitude = 0.5f;
+		boosterEffect.strength = My::RandomF(60.0f, 100.0f, 0);
+		boosterEffect.startStrength = boosterEffect.strength;
+		boosterEffect.amplitude = 0.5f;
 
-		effect.time = 0.0f;
+		boosterEffect.time = 0.0f;
 
 		next = false;
 
 		//エフェクト表示
-		effect.isEnd = false;
+		boosterEffect.isEnd = false;
 
 		//effectQuantity += 1;
 
 		//初期化フラグfalse
-		effect.init = false;
+		boosterEffect.init = false;
 
 	}
 
-	if (effect.elapseFrame >= 100) {
+	if (boosterEffect.elapseFrame >= 100) {
 
 		//エフェクト消去
-		effect.isEnd = true;
+		boosterEffect.isEnd = true;
 
 		//経過フレーム初期化
-		effect.elapseFrame = 0.0f;
+		boosterEffect.elapseFrame = 0.0f;
 
 	}
 
-	if (effect.elapseFrame == effect.nextFrame) {
+	if (boosterEffect.elapseFrame == boosterEffect.nextFrame) {
 
 		next = true;
 
 	}
 
-	if (effect.elapseFrame == 90) {
+	if (boosterEffect.elapseFrame == 90) {
 		effectQuantity = 0;
 	}
 
-	if (effect.isEnd == false) {
+	if (boosterEffect.isEnd == false) {
 
 		//粒子エフェクトのイージング処理
-		effect.time += 0.01f;
-		effect.easeTime = 1.0f - powf(1.0f - effect.time, 3.0f);
+		boosterEffect.time += 0.01f;
+		boosterEffect.easeTime = 1.0f - powf(1.0f - boosterEffect.time, 3.0f);
 
 		//経過フレーム加算
-		effect.elapseFrame += 1.0f;
+		boosterEffect.elapseFrame += 1.0f;
 
 	}
 
@@ -191,6 +192,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
+			{1.0f, 1.0f},
 			{1.0f, 1.0f},
 			{1.0f, 1.0f},
 			0.0f,
@@ -258,7 +260,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 
 		for (int i = 0; i < maxEffects; i++) {
-			EffectUpdate(effect[i], object, next, effectQuantity);
+			BoosterEffectUpdate(effect[i], object, next, effectQuantity);
 		}
 
 		Novice::ScreenPrintf(0, 10, "Quantity : %d", effectQuantity);

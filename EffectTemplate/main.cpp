@@ -180,6 +180,9 @@ void BoosterEffectUpdate(Effect& boosterEffect, Object& object, bool& next) {
 
 			boosterEffect.position.x = (1.0 - boosterEffect.easeMoveTime) * boosterEffect.startPosition.x + boosterEffect.easeMoveTime * boosterEffect.endPosition.x;
 			boosterEffect.position.y = (1.0 - boosterEffect.easeMoveTime) * boosterEffect.startPosition.y + boosterEffect.easeMoveTime * boosterEffect.endPosition.y;
+
+			boosterEffect.color = (1.0 - boosterEffect.easeMoveTime) * 0xFFFFC600 + boosterEffect.easeMoveTime * 0xFF232300;
+
 		}
 
 		//エフェクトを徐々に消滅させる
@@ -192,6 +195,27 @@ void BoosterEffectUpdate(Effect& boosterEffect, Object& object, bool& next) {
 		boosterEffect.elapseFrame += 1.0f;
 
 	}
+
+}
+
+unsigned int FadeIn(float& t, float easeT, unsigned int color) {
+	unsigned int red = 0xFF000000 & color;
+	red = red >> 24;
+
+	unsigned int blue = 0x0000FF00 & color;
+	blue = blue >> 16;
+
+	unsigned int green = 0x00FF0000 & color;
+	green = green >> 8;
+
+	unsigned int alpha = 0x000000FF & color;
+
+	t += easeT;
+
+	blue = static_cast<unsigned int>((1.0 - t) * 0xFF + t * 0x00);
+	green = static_cast<unsigned int>((1.0 - t) * 0xFF + t * 0x00);
+
+	return{ red << 24 | green << 16 | blue << 8 | alpha };
 
 }
 
@@ -370,14 +394,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					32, 32,
 
 					circleTexture,
-					0xFFFFFFFF00 + effect[i].currentAlpha
+					effect[i].color + effect[i].currentAlpha
 				);
 			}
 		}
 
 		Novice::SetBlendMode(kBlendModeNormal);
 
-		Novice::ScreenPrintf(0, 10, "frame : %4.2f", effect[0].elapseFrame);
 
 		/*********************************
 			描画処理ここまで

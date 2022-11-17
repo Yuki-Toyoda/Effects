@@ -170,7 +170,7 @@ float Ease_InOut(float t, float b, float c, float d) {
 
 unsigned int ColorEasing(float t, unsigned int startColor, unsigned int endColor, float d) {
 	
-	unsigned int color = UIntClamp(IntEase_In(t, (startColor & 0xFF), ((endColor - startColor) & 0xFF), d), 0x00, 0xFF);
+	unsigned int color = IntEase_In(t, (startColor & 0xFF), ((endColor - startColor) & 0xFF), d);
 
 	return color;
 
@@ -194,8 +194,6 @@ void BoosterEffectUpdate(Effect& boosterEffect, Object& object, bool& next) {
 		boosterEffect.strength = My::RandomF(60.0f, 100.0f, 0);
 		boosterEffect.startStrength = boosterEffect.strength;
 		boosterEffect.amplitude = 0.5f;
-
-		boosterEffect.colorAlpha = 0x01;
 
 		boosterEffect.alphaTime = 0.0f;
 		boosterEffect.moveTime = 0.0f;
@@ -263,7 +261,7 @@ void BoosterEffectUpdate(Effect& boosterEffect, Object& object, bool& next) {
 			boosterEffect.colorR = ColorEasing(boosterEffect.moveTime, 0xFF, 0xff, 1.0f);
 			boosterEffect.colorG = ColorEasing(boosterEffect.moveTime, 0xFF, 0x7f, 1.0f);
 			boosterEffect.colorB = ColorEasing(boosterEffect.moveTime, 0xFF, 0x7f, 1.0f);
-			boosterEffect.colorAlpha = ColorEasing(boosterEffect.moveTime, 0xFF, 0x00, 1.0f);
+			boosterEffect.colorAlpha = ColorEasing(boosterEffect.moveTime, 0x00, 0xFF, 1.0f);
 
 		}
 		else {

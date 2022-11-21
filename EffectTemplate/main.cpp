@@ -94,13 +94,13 @@ const int maxEffects = 50;
 /******** エフェクト更新処理 **********/
 void EffectUpdate(Effect& generateEffect, Object& object, bool& next, float& addTime) {
 	if (generateEffect.init == true) {
-		
+
 		generateEffect.nextFrame = 1.0f;
 
 		//位置等を初期化
 		generateEffect.position = { My::RandomF(object.position.x - object.radius.x - 100, object.position.x + object.radius.x + 100, 1), My::RandomF(object.position.y - object.radius.y + object.offset + 100, object.position.y - object.radius.y + object.offset - 100, 1) };
-		generateEffect.startPosition = { generateEffect.position.x, generateEffect.position.y};
-		generateEffect.endPosition = { object.position.x, object.position.y - object.radius.y + object.offset};
+		generateEffect.startPosition = { generateEffect.position.x, generateEffect.position.y };
+		generateEffect.endPosition = { object.position.x, object.position.y - object.radius.y + object.offset };
 
 		generateEffect.size = { My::RandomF(10.0f, 12.5f, 0), generateEffect.size.x };
 		generateEffect.startSize = { generateEffect.size.x, generateEffect.size.x };
@@ -109,7 +109,7 @@ void EffectUpdate(Effect& generateEffect, Object& object, bool& next, float& add
 		generateEffect.startStrength = generateEffect.strength;
 		generateEffect.amplitude = 1.0f;
 
-		
+
 		generateEffect.time = 0.0f;
 
 		next = false;
@@ -142,7 +142,7 @@ void EffectUpdate(Effect& generateEffect, Object& object, bool& next, float& add
 
 	if (generateEffect.isEnd == false) {
 
-		generateEffect.endPosition = { object.position.x, (object.position.y - object.radius.y) + object.offset};
+		generateEffect.endPosition = { object.position.x, (object.position.y - object.radius.y) + object.offset };
 
 		if (generateEffect.time < 1.0f) {
 			//粒子エフェクトのイージング処理
@@ -152,9 +152,9 @@ void EffectUpdate(Effect& generateEffect, Object& object, bool& next, float& add
 			//粒子エフェクトのサイズ変更
 			generateEffect.size.x = (1.1f - generateEffect.easeTime) * generateEffect.startSize.x + generateEffect.easeTime * 0;
 			generateEffect.size.y = (1.1f - generateEffect.easeTime) * generateEffect.startSize.y + generateEffect.easeTime * 0;
-\
-			//粒子エフェクトを徐々に上に
-			generateEffect.easeTime = generateEffect.time * generateEffect.time;
+			\
+				//粒子エフェクトを徐々に上に
+				generateEffect.easeTime = generateEffect.time * generateEffect.time;
 
 			generateEffect.currentAlpha = (1.0 - generateEffect.easeTime) * 0xFF + generateEffect.easeTime * 0x00;
 			generateEffect.position.x = (1.0 - generateEffect.easeTime) * generateEffect.startPosition.x + generateEffect.easeTime * generateEffect.endPosition.x;
@@ -163,7 +163,7 @@ void EffectUpdate(Effect& generateEffect, Object& object, bool& next, float& add
 		else {
 			generateEffect.time = 1.0f;
 		}
-		
+
 		if (addTime < 0.02f) {
 			addTime += 0.0001f / maxEffects;
 		}

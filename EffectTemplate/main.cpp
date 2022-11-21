@@ -92,7 +92,7 @@ const int maxEffects = 50;
 void EffectUpdate(Effect& generateEffect, Object& object, bool& next, int& effectQuantity) {
 	if (generateEffect.init == true) {
 		
-		generateEffect.nextFrame = 30;
+		generateEffect.nextFrame = 1;
 
 		//位置等を初期化
 		generateEffect.position = { My::RandomF(object.position.x - object.radius.x / 2, object.position.x + object.radius.x / 2, 1), My::RandomF(object.position.y - object.radius.y / 2, object.position.y + object.radius.y / 2, 1) };
@@ -101,6 +101,9 @@ void EffectUpdate(Effect& generateEffect, Object& object, bool& next, int& effec
 
 		generateEffect.size = { My::RandomF(5.0f, 7.5f, 0), generateEffect.size.x };
 		generateEffect.startSize = { generateEffect.size.x, generateEffect.size.x };
+
+		generateEffect.theta = My::Random(0, 360);
+		generateEffect.theta = generateEffect.theta % 360;
 
 		generateEffect.strength = My::RandomF(60.0f, 100.0f, 0);
 		generateEffect.startStrength = generateEffect.strength;
@@ -210,7 +213,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Object object{
 		{640.0f, 360.0f},
-		{10.0f, 10.0f}
+		{10.0f, 100.0f}
 	};
 
 	/*********************************

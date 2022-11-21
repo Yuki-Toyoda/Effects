@@ -58,6 +58,7 @@ struct Effect {
 	float strength;
 	float amplitude;
 	float acceleration;
+	int degree;
 	float theta;
 	float nextFrame;
 	float elapseFrame;
@@ -102,8 +103,8 @@ void EffectUpdate(Effect& generateEffect, Object& object, bool& next, int& effec
 		generateEffect.size = { My::RandomF(5.0f, 7.5f, 0), generateEffect.size.x };
 		generateEffect.startSize = { generateEffect.size.x, generateEffect.size.x };
 
-		generateEffect.theta = My::Random(0, 360);
-		generateEffect.theta = generateEffect.theta % 360;
+		generateEffect.degree = My::Random(0, 360);
+		generateEffect.theta = generateEffect.degree * (M_PI / 180.0f);
 
 		generateEffect.strength = My::RandomF(60.0f, 100.0f, 0);
 		generateEffect.startStrength = generateEffect.strength;
@@ -200,6 +201,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			0.0f,
 			0.0f,
 			0.0f,
+			0,
 			0.0f,
 			0.0f,
 			0.0f,
@@ -249,15 +251,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					next = false;
 				}
 			}
-		}
-
-		if (object.radius.x > 0) {
-			object.radius.x -= object.velocity;
-			object.radius.y -= object.velocity;
-			object.velocity += object.acceleration;
-		}
-		else {
-			object.radius.x = 0;
 		}
 
 		for (int i = 0; i < maxEffects; i++) {

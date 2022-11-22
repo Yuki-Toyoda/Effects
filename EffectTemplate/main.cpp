@@ -63,7 +63,7 @@ struct Effect {
 	float elapseFrame;
 	float time;
 	float easeTime;
-	unsigned int currentAlpha;
+	unsigned int color;
 
 	bool init;
 	bool isEnd;
@@ -88,6 +88,98 @@ const int maxEffects = 50;
 	関数宣言ここから
 *********************************/
 
+//clamp関数
+	//返り値 ... float型の数値
+	//number ... 範囲を制限したい数値
+	//min ... 最小値
+	//max ... 最大値
+float clamp(float number, float min, float max) {
+	if (number > max) {
+		return number = max;
+	}
+	else if (number < min) {
+		return number = min;
+	}
+	else {
+		return number;
+	}
+}
+
+//イーズイン関数(int型)
+	//int型のイージング結果を返すイーズイン関数
+	//返り値 ... int型のイージング後の数値
+	//start ... int型の開始値
+	//end ... int型の終了値
+int IntEaseIn(float t, long int start, long int end) {
+	float easeT = t * t;
+	return (1.0f - easeT) * start + easeT * end;
+}
+
+//イーズアウト関数(int型)
+	//int型のイージング結果を返すイーズアウト関数
+	//返り値 ... int型のイージング後の数値
+	//start ... int型の開始値
+	//end ... int型の終了値
+int IntEaseOut(float t, long int start, long int end) {
+	float easeT = 1.0f - powf(1.0f - t, 3.0f);
+	return (1.0f - easeT) * start + easeT * end;
+}
+
+//イーズインアウト関数(int型)
+	//int型のイージング結果を返すイーズインアウト関数
+	//返り値 ... int型のイージング後の数値
+	//start ... int型の開始値
+	//end ... int型の終了値
+int IntEaseInOut(float t, long int start, long int end) {
+	float easeT = (-cosf(M_PI * t) - 1.0f) / 2.0f;
+	return (1.0f - easeT) * start + easeT * end;
+}
+
+//イーズイン関数(float型)
+	//float型のイージング結果を返すイーズイン関数
+	//返り値 ... float型のイージング後の数値
+	//start ... float型の開始値
+	//end ... float型の終了値
+float easeIn(float t, float start, float end) {
+	float easeT = t * t;
+	return (1.0f - easeT) * start + easeT * end;
+}
+
+//イーズアウト関数(float型)
+	//float型のイージング結果を返すイーズアウト関数
+	//返り値 ... float型のイージング後の数値
+	//start ... float型の開始値
+	//end ... float型の終了値
+float easeOut(float t, float start, float end) {
+	float easeT = 1.0f - powf(1.0f - t, 3.0f);
+	return (1.0f - easeT) * start + easeT * end;
+}
+
+//イーズインアウト関数(float型)
+	//float型のイージング結果を返すイーズインアウト関数
+	//返り値 ... float型のイージング後の数値
+	//start ... float型の開始値
+	//end ... float型の終了値
+float easeInOut(float t, float start, float end) {
+	float easeT = (-cosf(M_PI * t) - 1.0f) / 2.0f;
+	return (1.0f - easeT) * start + easeT * end;
+}
+
+//カラーイージング関数(unsigned int型)
+	//unsigned int型のイージング結果を返すイーズアウト関数
+	//色を徐々に変化させる。現在はイーズアウトのみ対応
+	//返り値 ... unsigned int型のイージング後の数値
+	//start ... unsigned int型の開始色
+	//end ... unsigned int型の終了色
+unsigned int ColorEasing(float t, unsigned int startColor, unsigned int endColor) {
+	unsigned int red = IntEaseOut(t, (((startColor & 0xFF000000) >> 24) & 0xFF), (((endColor & 0xFF000000) >> 24) & 0xFF));
+	unsigned int green = IntEaseOut(t, (((startColor & 0x00FF0000) >> 16) & 0xFF), (((endColor & 0x00FF0000) >> 16) & 0xFF));
+	unsigned int blue = IntEaseOut(t, (((startColor & 0x0000FF00) >> 8) & 0xFF), (((endColor & 0x0000FF00) >> 8) & 0xFF));
+	unsigned int alpha = IntEaseOut(t, (((startColor & 0x000000FF)) & 0xFF), (((endColor & 0x000000FF)) & 0xFF));
+
+	return (red << 24) + (green << 16) + (blue << 8) + alpha;
+}
+
 /******** エフェクト更新処理 **********/
 void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantity) {
 	if (effect.init == true) {
@@ -101,10 +193,6 @@ void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantit
 
 		effect.size = { My::RandomF(5.0f, 7.5f, 0), effect.size.x };
 		effect.startSize = { effect.size.x, effect.size.x };
-
-		effect.strength = My::RandomF(60.0f, 100.0f, 0);
-		effect.startStrength = effect.strength;
-		effect.amplitude = 0.5f;
 
 		effect.time = 0.0f;
 
@@ -202,7 +290,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			0.0f,
 			0.0f,
 			0.0f,
-			0xFF,
+			0xFFFFFFFF,
 			false,
 			true
 		};
@@ -311,7 +399,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					32, 32,
 
 					circleTexture,
-					0xFFFFFFFF00 + effect[i].currentAlpha
+					effect[i].color
 				);
 			}
 		}

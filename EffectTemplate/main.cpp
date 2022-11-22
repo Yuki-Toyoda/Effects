@@ -21,10 +21,10 @@
 =================================*/
 
 /******** ウィンドウ名の指定 **********/
-const char kWindowTitle[] = "エフェクト";
+const char kWindowTitle[] = "埃エフェクト";
 
 /******** ウィンドウサイズの指定 **********/
-const int kWinodowWidth = 1280; //x
+const int kWindowWidth = 1280; //x
 const int kWindowHeight = 720; //y
 
 /*********************************
@@ -187,9 +187,9 @@ void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantit
 		effect.nextFrame = 30;
 
 		//位置等を初期化
-		effect.position = { My::RandomF(object.position.x - object.radius.x / 2, object.position.x + object.radius.x / 2, 1), My::RandomF(object.position.y - object.radius.y / 2, object.position.y + object.radius.y / 2, 1) };
+		effect.position = { My::RandomF(0.0f, kWindowWidth, 1), My::RandomF(0.0f, kWindowHeight, 1) };
 		effect.startPosition = { effect.position.x, effect.position.y };
-		effect.endPosition = { effect.startPosition.x, effect.position.y - My::RandomF(200.0f, 300.0f, 1) };
+		effect.endPosition = { effect.startPosition.x, effect.position.y};
 
 		effect.size = { My::RandomF(5.0f, 7.5f, 0), effect.size.x };
 		effect.startSize = { effect.size.x, effect.size.x };
@@ -208,7 +208,7 @@ void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantit
 
 	}
 
-	if (effect.elapseFrame >= 100) {
+	if (effect.time >= 1.0f) {
 
 		//エフェクト消去
 		effect.isEnd = true;
@@ -232,7 +232,14 @@ void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantit
 
 		//粒子エフェクトのイージング処理
 		effect.time += 0.01f;
-		effect.easeTime = 1.0f - powf(1.0f - effect.time, 3.0f);
+		if (effect.time < 1.0f) {
+
+
+
+		}
+		else {
+			effect.time = 1.0f;
+		}
 
 		//経過フレーム加算
 		effect.elapseFrame += 1.0f;
@@ -249,7 +256,7 @@ void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantit
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// ライブラリの初期化
-	Novice::Initialize(kWindowTitle, kWinodowWidth, kWindowHeight);
+	Novice::Initialize(kWindowTitle, kWindowWidth, kWindowHeight);
 
 	// キー入力結果を受け取る箱
 	char keys[256] = { 0 };
@@ -358,6 +365,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/*********************************
 			描画処理ここから
 		*********************************/
+
+		Novice::DrawQuad(
+			0, 0,
+			kWindowWidth, 0,
+			0, kWindowHeight,
+			kWindowWidth, kWindowHeight,
+			0, 0,
+			1, 1,
+			sampleTexture,
+			BLACK
+		);
 
 		Novice::DrawQuad(
 			object.position.x - object.radius.x / 2,

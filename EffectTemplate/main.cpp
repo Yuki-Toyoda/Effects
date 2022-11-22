@@ -139,8 +139,7 @@ float Ease_In(float t, float b, float c, float d) {
 // b ... プロパティの初めの値
 // c ... プロパティの初めの値と終わりの値との差(変化量)
 // d ... アニメーションの時間（秒）
-int IntEase_In(float t, long int b, long int c, float d) {
-	t /= d;
+int IntEase_In(float t, long int b, long int c) {
 	return c * t * t + b;
 }
 
@@ -166,9 +165,9 @@ float Ease_InOut(float t, float b, float c, float d) {
 	return -c / 2.0 * (cosf(M_PI * t / d) - 1) + b;
 }
 
-unsigned int ColorEasing(float t, unsigned int startColor, unsigned int endColor, float d) {
+unsigned int ColorEasing(float t, unsigned int startColor, unsigned int endColor) {
 	
-	unsigned int color = IntEase_In(t, (startColor & 0xFF), ((endColor - startColor) & 0xFF), d);
+	unsigned int color = IntEase_In(t, (startColor & 0xFF), ((endColor - startColor) & 0xFF));
 
 	return color;
 
@@ -256,10 +255,10 @@ void BoosterEffectUpdate(Effect& boosterEffect, Object& object, bool& next) {
 			boosterEffect.position.x = (1.0 - boosterEffect.easeMoveTime) * boosterEffect.startPosition.x + boosterEffect.easeMoveTime * boosterEffect.endPosition.x;
 			boosterEffect.position.y = (1.0 - boosterEffect.easeMoveTime) * boosterEffect.startPosition.y + boosterEffect.easeMoveTime * boosterEffect.endPosition.y;
 
-			boosterEffect.colorR = ColorEasing(boosterEffect.moveTime, 0xFF, 0xff, 1.0f);
-			boosterEffect.colorG = ColorEasing(boosterEffect.moveTime, 0xFF, 0x7f, 1.0f);
-			boosterEffect.colorB = ColorEasing(boosterEffect.moveTime, 0xFF, 0x7f, 1.0f);
-			boosterEffect.colorAlpha = ColorEasing(boosterEffect.moveTime, 0x00, 0xFF, 1.0f);
+			boosterEffect.colorR = ColorEasing(boosterEffect.moveTime, 0xFF, 0xff);
+			boosterEffect.colorG = ColorEasing(boosterEffect.moveTime, 0xFF, 0xff);
+			boosterEffect.colorB = ColorEasing(boosterEffect.moveTime, 0xFF, 0xff);
+			boosterEffect.colorAlpha = ColorEasing(boosterEffect.moveTime, 0xFF, 0x00);
 
 		}
 		else {
@@ -456,7 +455,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					32, 32,
 
 					circleTexture,
-					(effect[i].colorR >> 24) + (effect[i].colorG >> 16) + (effect[i].colorB >> 8) + effect[i].colorAlpha
+					(effect[i].colorR << 24) + (effect[i].colorG << 16) + (effect[i].colorB << 8) + effect[i].colorAlpha
 				);
 			}
 		}
@@ -467,10 +466,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//Novice::ScreenPrintf(0, 20 * i, "color[%d] : %x", i ,effect[i].color);
 		}
 
-		Novice::ScreenPrintf(0, 20, "colorR : %x", effect[0].colorR);
-		Novice::ScreenPrintf(0, 40, "colorG : %x", effect[0].colorG);
-		Novice::ScreenPrintf(0, 60, "colorB : %x", effect[0].colorB);
+		Novice::ScreenPrintf(0, 20, "colorR : %x", effect[0].colorR << 24);
+		Novice::ScreenPrintf(0, 40, "colorG : %x", effect[0].colorG << 16);
+		Novice::ScreenPrintf(0, 60, "colorB : %x", effect[0].colorB<< 8);
 		Novice::ScreenPrintf(0, 80, "colorA : %x", effect[0].colorAlpha);
+		Novice::ScreenPrintf(0, 100, "color : %x", (effect[0].colorR << 24) + (effect[0].colorG << 16) + (effect[0].colorB << 8) + effect[0].colorAlpha);
 
 		/*********************************
 			描画処理ここまで

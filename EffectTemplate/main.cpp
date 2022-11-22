@@ -21,11 +21,14 @@
 =================================*/
 
 /******** ウィンドウ名の指定 **********/
-const char kWindowTitle[] = "エフェクト";
+const char kWindowTitle[] = "生成エフェクト";
 
 /******** ウィンドウサイズの指定 **********/
 const int kWinodowWidth = 1280; //x
 const int kWindowHeight = 720; //y
+
+//表示可能エフェクト数
+const int maxEffects = 50;
 
 /*********************************
 	定数の宣言ここまで
@@ -80,9 +83,6 @@ struct Object {
 	float acceleration;
 };
 
-//表示可能エフェクト数
-const int maxEffects = 50;
-
 /*********************************
 	構造体宣言ここまで
 *********************************/
@@ -98,32 +98,33 @@ void EffectUpdate(Effect& generateEffect, Object& object, bool& next, float& add
 		generateEffect.nextFrame = 1.0f;
 
 		//位置等を初期化
+
+		//生成位置の設定
 		generateEffect.position = { My::RandomF(object.position.x - object.radius.x - 100, object.position.x + object.radius.x + 100, 1), My::RandomF(object.position.y - object.radius.y + object.offset + 100, object.position.y - object.radius.y + object.offset - 100, 1) };
 		generateEffect.startPosition = { generateEffect.position.x, generateEffect.position.y };
+
+		//終端位置の設定
 		generateEffect.endPosition = { object.position.x, object.position.y - object.radius.y + object.offset };
 
+		//パーティクルサイズの設定
 		generateEffect.size = { My::RandomF(10.0f, 12.5f, 0), generateEffect.size.x };
 		generateEffect.startSize = { generateEffect.size.x, generateEffect.size.x };
 
-		generateEffect.strength = My::RandomF(40.0f, 50.0f, 0);
-		generateEffect.startStrength = generateEffect.strength;
-		generateEffect.amplitude = 1.0f;
-
-
+		//イージング用変数初期化
 		generateEffect.time = 0.0f;
 
+		//パーティクルを一度に生成しないようにする
 		next = false;
 
 		//エフェクト表示
 		generateEffect.isEnd = false;
-
-		//effectQuantity += 1;
 
 		//初期化フラグfalse
 		generateEffect.init = false;
 
 	}
 
+	//パーティクル終了処理
 	if (generateEffect.time == 1.0f) {
 
 		//エフェクト消去
@@ -134,6 +135,7 @@ void EffectUpdate(Effect& generateEffect, Object& object, bool& next, float& add
 
 	}
 
+	//オブジェクトが指定のサイズになるまで一定フレームでパーティクル生成
 	if (generateEffect.elapseFrame == generateEffect.nextFrame && object.offset > 0.0f) {
 
 		next = true;
@@ -142,6 +144,7 @@ void EffectUpdate(Effect& generateEffect, Object& object, bool& next, float& add
 
 	if (generateEffect.isEnd == false) {
 
+		//パーティクルの終端座標を更新し続ける
 		generateEffect.endPosition = { object.position.x, (object.position.y - object.radius.y) + object.offset };
 
 		if (generateEffect.time < 1.0f) {
@@ -150,11 +153,11 @@ void EffectUpdate(Effect& generateEffect, Object& object, bool& next, float& add
 			generateEffect.easeTime = 1.0f - powf(1.0f - generateEffect.time, 3.0f);
 
 			//粒子エフェクトのサイズ変更
-			generateEffect.size.x = (1.1f - generateEffect.easeTime) * generateEffect.startSize.x + generateEffect.easeTime * 0;
-			generateEffect.size.y = (1.1f - generateEffect.easeTime) * generateEffect.startSize.y + generateEffect.easeTime * 0;
-			\
-				//粒子エフェクトを徐々に上に
-				generateEffect.easeTime = generateEffect.time * generateEffect.time;
+			generateEffect.size.x = (1.0f - generateEffect.easeTime) * generateEffect.startSize.x + generateEffect.easeTime * 1.0f;
+			generateEffect.size.y = (1.0f - generateEffect.easeTime) * generateEffect.startSize.y + generateEffect.easeTime * 1.0f;
+
+			//粒子エフェクトを徐々に上に
+			generateEffect.easeTime = generateEffect.time * generateEffect.time;
 
 			generateEffect.currentAlpha = (1.0 - generateEffect.easeTime) * 0xFF + generateEffect.easeTime * 0x00;
 			generateEffect.position.x = (1.0 - generateEffect.easeTime) * generateEffect.startPosition.x + generateEffect.easeTime * generateEffect.endPosition.x;
@@ -202,7 +205,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	/******** エフェクト関係 **********/
 
-	float addTime = 0.01f;
+	float addTime = 0.0125f;
 	bool next = false;
 
 	int mousePosX = 0;
@@ -237,7 +240,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Object object{
 		{640.0f, 360.0f},
-		{5.0f, 50.0f}
+		{100.0f, 50.0f}
 	};
 
 	/*********************************
@@ -263,7 +266,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		if (Novice::IsTriggerMouse(0)) {
 			next = true;
-			addTime = 0.01f;
+			addTime = 0.015f;
 			object.offset = object.radius.y * 2.0f;
 		}
 

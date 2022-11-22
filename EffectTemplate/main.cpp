@@ -21,7 +21,7 @@
 =================================*/
 
 /******** ウィンドウ名の指定 **********/
-const char kWindowTitle[] = "ブーストエフェクト";
+const char kWindowTitle[] = "エフェクト";
 
 /******** ウィンドウサイズの指定 **********/
 const int kWinodowWidth = 1280; //x
@@ -53,7 +53,6 @@ struct Effect {
 	Vector2D endPosition;
 	Vector2D size;
 	Vector2D startSize;
-	Vector2D endSize;
 	Vector2D velocity;
 	float startStrength;
 	float strength;
@@ -62,16 +61,10 @@ struct Effect {
 	float theta;
 	float nextFrame;
 	float elapseFrame;
-	float alphaTime;
-	float easeAlphaTime;
-	float moveTime;
-	float easeMoveTime;
-	unsigned int colorR;
-	unsigned int colorG;
-	unsigned int colorB;
-	unsigned int colorAlpha;
+	float time;
+	float easeTime;
+	unsigned int color;
 
-	bool levitation;
 	bool init;
 	bool isEnd;
 };
@@ -95,184 +88,78 @@ const int maxEffects = 50;
 	関数宣言ここから
 *********************************/
 
-unsigned int UIntClamp(unsigned int number, unsigned int min, unsigned int max) {
 
-	if (number < min) {
-		return number = min;
-	}
-	else if (number > max) {
-		return number = max;
-	}
-	else {
-		return number = number;
-	}
 
+int IntEaseIn(float& t, long int b, long int c) {
+	return c* t* t* b;
 }
 
-// イージング関数
-	// 返り値：結果
-	// 引数：
-	// t ... 現在のタイム値(秒)
-	// b ... プロパティの初めの値
-	// c ... プロパティの初めの値と終わりの値との差(変化量)
-	// d ... アニメーションの時間（秒）
-float Linear(float t, float  b, float  c, float  d) {
-	return c * t / d + b;
-};
-// イージング関数
-// 返り値：結果
-// 引数：
-// t ... 現在のタイム値(秒)
-// b ... プロパティの初めの値
-// c ... プロパティの初めの値と終わりの値との差(変化量)
-// d ... アニメーションの時間（秒）
-float Ease_In(float t, float b, float c, float d) {
-	t /= d;
-	return c * t * t + b;
-}
+unsigned int ColorEasing(float& t, unsigned int startColor, unsigned int endColor) {
 
-// イージング関数(int型)
-// 返り値：結果
-// 引数：
-// t ... 現在のタイム値(秒)
-// b ... プロパティの初めの値
-// c ... プロパティの初めの値と終わりの値との差(変化量)
-// d ... アニメーションの時間（秒）
-int IntEase_In(float& t, long int b, long int c, float d) {
-	t /= d;
-	return c * t * t + b;
-}
-
-// イージング関数
-// 返り値：結果
-// 引数：
-// t ... 現在のタイム値(秒)
-// b ... プロパティの初めの値
-// c ... プロパティの初めの値と終わりの値との差(変化量)
-// d ... アニメーションの時間（秒）
-float Ease_Out(float t, float b, float c, float d) {
-	t /= d;
-	return -c * t * (t - 2.0) + b;
-}
-// イージング関数
-// 返り値：結果
-// 引数：
-// t ... 現在のタイム値(秒)
-// b ... プロパティの初めの値
-// c ... プロパティの初めの値と終わりの値との差(変化量)
-// d ... アニメーションの時間（秒）
-float Ease_InOut(float t, float b, float c, float d) {
-	return -c / 2.0 * (cosf(M_PI * t / d) - 1) + b;
-}
-
-unsigned int ColorEasing(float& t, unsigned int startColor, unsigned int endColor, float d) {
-	
-	unsigned int color = IntEase_In(t, (startColor & 0xFF), ((endColor - startColor) & 0xFF), d);
-
-	return color;
+	unsigned int red = IntEaseIn(t, (startColor & 0xFF000000) 1.0f)
 
 }
 
 /******** エフェクト更新処理 **********/
-void BoosterEffectUpdate(Effect& boosterEffect, Object& object, bool& next) {
-	if (boosterEffect.init == true) {
-		
-		boosterEffect.nextFrame = 1;
+void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantity) {
+	if (effect.init == true) {
+
+		effect.nextFrame = 30;
 
 		//位置等を初期化
-		boosterEffect.position = { My::RandomF(object.position.x - object.radius.x, object.position.x + object.radius.x, 1), My::RandomF(object.position.y, object.position.y + object.radius.y * 2, 1) };
-		boosterEffect.startPosition = { boosterEffect.position.x, boosterEffect.position.y };
-		boosterEffect.endPosition = { My::RandomF(boosterEffect.startPosition.x - 30.0f, boosterEffect.startPosition.x + 30.0f, 1), boosterEffect.position.y + My::RandomF(200.0f, 250.0f, 1) };
+		effect.position = { My::RandomF(object.position.x - object.radius.x / 2, object.position.x + object.radius.x / 2, 1), My::RandomF(object.position.y - object.radius.y / 2, object.position.y + object.radius.y / 2, 1) };
+		effect.startPosition = { effect.position.x, effect.position.y };
+		effect.endPosition = { effect.startPosition.x, effect.position.y - My::RandomF(200.0f, 300.0f, 1) };
 
-		boosterEffect.size = { 3.0f, 3.0f };
-		boosterEffect.startSize = { boosterEffect.size.x, boosterEffect.size.y };
-		boosterEffect.endSize = { My::RandomF(15.0f, 20.0f, 1), boosterEffect.endSize.x};
+		effect.size = { My::RandomF(5.0f, 7.5f, 0), effect.size.x };
+		effect.startSize = { effect.size.x, effect.size.x };
 
-		boosterEffect.strength = My::RandomF(60.0f, 100.0f, 0);
-		boosterEffect.startStrength = boosterEffect.strength;
-		boosterEffect.amplitude = 0.5f;
+		effect.strength = My::RandomF(60.0f, 100.0f, 0);
+		effect.startStrength = effect.strength;
+		effect.amplitude = 0.5f;
 
-		boosterEffect.alphaTime = 0.0f;
-		boosterEffect.moveTime = 0.0f;
-
-		boosterEffect.levitation = false;
+		effect.time = 0.0f;
 
 		next = false;
 
 		//エフェクト表示
-		boosterEffect.isEnd = false;
+		effect.isEnd = false;
 
 		//effectQuantity += 1;
 
 		//初期化フラグfalse
-		boosterEffect.init = false;
+		effect.init = false;
 
 	}
 
-	if (boosterEffect.elapseFrame >= 150) {
+	if (effect.elapseFrame >= 100) {
 
 		//エフェクト消去
-		boosterEffect.isEnd = true;
+		effect.isEnd = true;
 
 		//経過フレーム初期化
-		boosterEffect.elapseFrame = 0.0f;
+		effect.elapseFrame = 0.0f;
 
 	}
 
-	if (boosterEffect.elapseFrame == boosterEffect.nextFrame) {
+	if (effect.elapseFrame == effect.nextFrame) {
 
 		next = true;
 
 	}
 
-	if (boosterEffect.isEnd == false) {
+	if (effect.elapseFrame == 90) {
+		effectQuantity = 0;
+	}
 
-		if (boosterEffect.alphaTime < 1.0f && boosterEffect.levitation == false) {
-			//粒子エフェクトのイージング処理
-			boosterEffect.alphaTime += 0.03f;
-			boosterEffect.easeAlphaTime = 1.0f - powf(1.0f - boosterEffect.alphaTime, 3.0f);
+	if (effect.isEnd == false) {
 
-			//粒子エフェクトのサイズ変更
-			boosterEffect.size.x = (1.0 - boosterEffect.easeAlphaTime) * boosterEffect.startSize.x + boosterEffect.easeAlphaTime * boosterEffect.endSize.x;
-			boosterEffect.size.y = (1.0 - boosterEffect.easeAlphaTime) * boosterEffect.startSize.y + boosterEffect.easeAlphaTime * boosterEffect.endSize.y;
-
-			
-		}
-		else if (boosterEffect.alphaTime < 1.0f && boosterEffect.levitation == true) {
-			//粒子エフェクトのイージング処理
-			boosterEffect.alphaTime += 0.01f;
-			boosterEffect.easeAlphaTime = 1.0f - powf(1.0f - boosterEffect.alphaTime, 3.0f);
-
-			boosterEffect.easeAlphaTime = boosterEffect.alphaTime * boosterEffect.alphaTime;
-
-		}
-
-		if (boosterEffect.moveTime < 1.0f) {
-
-			boosterEffect.moveTime += 0.01f;
-			boosterEffect.easeMoveTime = 1.0f - powf(1.0f - boosterEffect.moveTime, 3.0f);
-
-			boosterEffect.position.x = (1.0 - boosterEffect.easeMoveTime) * boosterEffect.startPosition.x + boosterEffect.easeMoveTime * boosterEffect.endPosition.x;
-			boosterEffect.position.y = (1.0 - boosterEffect.easeMoveTime) * boosterEffect.startPosition.y + boosterEffect.easeMoveTime * boosterEffect.endPosition.y;
-
-			boosterEffect.colorR = ColorEasing(boosterEffect.moveTime, 0xFF, 0xff, 1.0f);
-			boosterEffect.colorG = ColorEasing(boosterEffect.moveTime, 0xFF, 0x7f, 1.0f);
-			boosterEffect.colorB = ColorEasing(boosterEffect.moveTime, 0xFF, 0x7f, 1.0f);
-			boosterEffect.colorAlpha = ColorEasing(boosterEffect.moveTime, 0x00, 0xFF, 1.0f);
-
-		}
-		else {
-			boosterEffect.moveTime = 1.0f;
-		}
-
-		//エフェクトを徐々に消滅させる
-		if (boosterEffect.alphaTime >= 0.3f && boosterEffect.levitation == false) {
-			boosterEffect.levitation = true;
-			boosterEffect.alphaTime = 0.0f;
-		}
+		//粒子エフェクトのイージング処理
+		effect.time += 0.01f;
+		effect.easeTime = 1.0f - powf(1.0f - effect.time, 3.0f);
 
 		//経過フレーム加算
-		boosterEffect.elapseFrame += 1.0f;
+		effect.elapseFrame += 1.0f;
 
 	}
 
@@ -300,10 +187,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	int sampleTexture = Novice::LoadTexture("white1x1.png");
 	int circleTexture = Novice::LoadTexture("./circle.png");
 
-	int trigger = false;
-
 	/******** エフェクト関係 **********/
 
+	int effectQuantity = 0;
 	bool next = false;
 
 	int mousePosX = 0;
@@ -319,9 +205,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			{0.0f, 0.0f},
 			{1.0f, 1.0f},
 			{1.0f, 1.0f},
-			{1.0f, 1.0f},
-			0.0f,
-			0.0f,
 			0.0f,
 			0.0f,
 			0.0f,
@@ -332,10 +215,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			0.0f,
 			0.0f,
 			0xFF,
-			0xFF,
-			0xFF,
-			0xFF,
-			false,
 			false,
 			true
 		};
@@ -391,8 +270,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 
 		for (int i = 0; i < maxEffects; i++) {
-			BoosterEffectUpdate(effect[i], object, next);
+			EffectUpdate(effect[i], object, next, effectQuantity);
 		}
+
+		Novice::ScreenPrintf(0, 10, "Quantity : %d", effectQuantity);
 
 		/*********************************
 			更新処理ここまで
@@ -401,16 +282,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/*********************************
 			描画処理ここから
 		*********************************/
-
-		//Novice::SetBlendMode(kBlendModeNormal);
-
-		Novice::DrawBox(
-			0, 0,
-			1280, 720,
-			0.0f,
-			BLACK,
-			kFillModeSolid
-		);
 
 		Novice::DrawQuad(
 			object.position.x - object.radius.x / 2,
@@ -429,13 +300,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			1, 1,
 
 			sampleTexture,
-			WHITE
+			RED
 		);
 
 		/******** エフェクト描画 **********/
-
-		//Novice::SetBlendMode(kBlendModeAdd);
-
 		for (int i = 0; i < maxEffects; i++) {
 			if (!effect[i].isEnd) {
 				Novice::DrawQuad(
@@ -455,21 +323,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					32, 32,
 
 					circleTexture,
-					(effect[i].colorR >> 24) + (effect[i].colorG >> 16) + (effect[i].colorB >> 8) + effect[i].colorAlpha
+					effect[i].color
 				);
 			}
 		}
-
-		//Novice::SetBlendMode(kBlendModeNormal);
-
-		for (int i = 0; i < maxEffects; i++) {
-			//Novice::ScreenPrintf(0, 20 * i, "color[%d] : %x", i ,effect[i].color);
-		}
-
-		Novice::ScreenPrintf(0, 20, "colorR : %x", effect[0].colorR);
-		Novice::ScreenPrintf(0, 40, "colorG : %x", effect[0].colorG);
-		Novice::ScreenPrintf(0, 60, "colorB : %x", effect[0].colorB);
-		Novice::ScreenPrintf(0, 80, "colorA : %x", effect[0].colorAlpha);
 
 		/*********************************
 			描画処理ここまで

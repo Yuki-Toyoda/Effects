@@ -6,8 +6,6 @@
 #include <MyFunc.h>
 #include <Vector2D.h>
 
-#include <iostream>
-#include <algorithm>
 
 /*================================
 	コピペ用↓

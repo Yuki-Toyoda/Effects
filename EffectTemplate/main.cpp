@@ -93,12 +93,12 @@ const int maxEffects = 50;
 	関数宣言ここから
 *********************************/
 
-int IntEaseIn(float& t, long int b, long int c) {
+int IntEaseIn(float t, long int b, long int c) {
 	float easeT = 1.0f - powf(1.0f - t, 3.0f);
 	return (1.0f - easeT) * b + easeT * c;
 }
 
-unsigned int ColorEasing(float& t, unsigned int startColor, unsigned int endColor) {
+unsigned int ColorEasing(float t, unsigned int startColor, unsigned int endColor) {
 
 	unsigned int red = IntEaseIn(t, (((startColor & 0xFF000000) >> 24) & 0xFF), (((endColor & 0xFF000000) >> 24) & 0xFF));
 	unsigned int green = IntEaseIn(t, (((startColor & 0x00FF0000) >> 16) & 0xFF), (((endColor & 0x00FF0000) >> 16) & 0xFF));

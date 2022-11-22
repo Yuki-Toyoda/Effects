@@ -194,7 +194,9 @@ void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantit
 		effect.size = { My::RandomF(5.0f, 7.5f, 0), effect.size.x };
 		effect.startSize = { effect.size.x, effect.size.x };
 
-		
+		effect.strength = My::RandomF(60.0f, 100.0f, 0);
+		effect.startStrength = effect.strength;
+		effect.amplitude = 0.5f;
 
 		effect.time = 0.0f;
 

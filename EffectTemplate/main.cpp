@@ -35,6 +35,15 @@ const int kWindowHeight = 720; //y
 	構造体宣言ここから
 *********************************/
 
+struct Quad {
+
+	Vector2D q1;
+	Vector2D q2;
+	Vector2D q3;
+	Vector2D q4;
+
+};
+
 /******** エフェクト **********/
 //position ... x, y座標
 //size ... 矩形のサイズ
@@ -48,6 +57,8 @@ const int kWindowHeight = 720; //y
 //init ... 初期化
 //isEnd ... エフェクトが終了しているか
 struct Effect {
+	Quad rotate;
+	Quad point;
 	Vector2D position;
 	Vector2D startPosition;
 	Vector2D endPosition;
@@ -188,6 +199,13 @@ void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantit
 		
 		effect.nextFrame = 10;
 
+		effect.point = {
+			{ -effect.size.x, -effect.size.y},
+			{effect.size.x, -effect.size.y},
+			{-effect.size.x, effect.size.y},
+			{effect.size.x, effect.size.y}
+		};
+
 		//位置等を初期化
 		effect.position = { My::RandomF(50.0f, kWindowWidth - 50.0f, 1), My::RandomF(50.0f, kWindowHeight - 50.0f, 1) };
 		effect.startPosition = { effect.position.x, effect.position.y };
@@ -302,6 +320,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Effect effect[maxEffects];
 	for (int i = 0; i < maxEffects; i++) {
 		effect[i] = {
+			{{0.0f, 0.0f},
+			{0.0f, 0.0f},
+			{0.0f, 0.0f},
+			{0.0f, 0.0f}},
+			{{0.0f, 0.0f},
+			{0.0f, 0.0f},
+			{0.0f, 0.0f},
+			{0.0f, 0.0f}},
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
@@ -425,17 +451,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		for (int i = 0; i < maxEffects; i++) {
 			if (!effect[i].isEnd) {
 				Novice::DrawQuad(
-					effect[i].position.x - effect[i].size.x,
-					effect[i].position.y + effect[i].size.y,
+					effect[i].rotate.q1.x,
+					effect[i].rotate.q1.y,
 
-					effect[i].position.x + effect[i].size.x,
-					effect[i].position.y + effect[i].size.y,
+					effect[i].rotate.q2.x,
+					effect[i].rotate.q2.y,
 
-					effect[i].position.x - effect[i].size.x,
-					effect[i].position.y - effect[i].size.y,
+					effect[i].rotate.q3.x,
+					effect[i].rotate.q3.y,
 
-					effect[i].position.x + effect[i].size.x,
-					effect[i].position.y - effect[i].size.y,
+					effect[i].rotate.q4.x,
+					effect[i].rotate.q4.y,
 
 					0, 0,
 					32, 32,

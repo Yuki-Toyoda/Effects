@@ -62,9 +62,11 @@ struct Effect {
 	float nextFrame;
 	float elapseFrame;
 	float time;
+	float colorTime;
 	float easeTime;
 	unsigned int color;
 
+	bool fade;
 	bool init;
 	bool isEnd;
 };
@@ -78,7 +80,7 @@ struct Object {
 };
 
 //表示可能エフェクト数
-const int maxEffects = 50;
+const int maxEffects = 30;
 
 /*********************************
 	構造体宣言ここまで
@@ -187,25 +189,26 @@ void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantit
 		effect.nextFrame = 10;
 
 		//位置等を初期化
-		effect.position = { My::RandomF(0.0f, kWindowWidth, 1), My::RandomF(0.0f, kWindowHeight, 1) };
+		effect.position = { My::RandomF(50.0f, kWindowWidth - 50.0f, 1), My::RandomF(50.0f, kWindowHeight - 50.0f, 1) };
 		effect.startPosition = { effect.position.x, effect.position.y };
 		effect.endPosition = { effect.position.x - My::RandomF(200, 300, 1), effect.position.y};
 
 		effect.size = { My::RandomF(5.0f, 7.5f, 0), effect.size.x };
 		effect.startSize = { effect.size.x, effect.size.x };
 
-		effect.strength = My::RandomF(60.0f, 100.0f, 0);
+		effect.strength = My::RandomF(60.0f, 90.0f, 0);
 		effect.startStrength = effect.strength;
-		effect.amplitude = 0.5f;
+		effect.amplitude = 0.05f;
 
 		effect.time = 0.0f;
 
 		next = false;
 
+		effect.colorTime = 0.0f;
+		effect.fade = false;
+
 		//エフェクト表示
 		effect.isEnd = false;
-
-		//effectQuantity += 1;
 
 		//初期化フラグfalse
 		effect.init = false;
@@ -231,16 +234,32 @@ void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantit
 	if (effect.isEnd == false) {
 
 		//粒子エフェクトのイージング処理
-		effect.time += 0.01f;
+		effect.time += 0.005f;
 		if (effect.time < 1.0f) {
-
 			effect.position.x = easeInOut(effect.time, effect.startPosition.x, effect.endPosition.x);
-			effect.color = ColorEasing(effect.time, 0xFFFFFFDD, 0xFFFFFF00);
-
 		}
 		else {
 			effect.time = 1.0f;
 		}
+
+		if (effect.colorTime < 1.0f && effect.fade == false) {
+			effect.colorTime += 0.01f;
+			effect.color = ColorEasing(effect.colorTime, 0x9effce00, 0xb7ffff55);
+		}
+		else if(effect.colorTime < 1.0f && effect.fade == true) {
+			effect.colorTime += 0.01f;
+			effect.color = ColorEasing(effect.colorTime, 0xb7ffff55, 0x9effce00);
+		}
+		else if(effect.colorTime > 1.0f && effect.fade == false) {
+			effect.fade = true;
+			effect.colorTime = 0.0f;
+		}
+		else {
+			effect.colorTime = 1.0f;
+		}
+
+		effect.theta += M_PI / effect.strength;
+		effect.position.y += sinf(effect.theta);
 
 		//経過フレーム加算
 		effect.elapseFrame += 1.0f;
@@ -298,7 +317,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			0.0f,
 			0.0f,
 			0.0f,
+			0.0f,
 			0xFFFFFFFF,
+			false,
 			false,
 			true
 		};
@@ -398,6 +419,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			RED
 		);
 
+		Novice::SetBlendMode(kBlendModeAdd);
+
 		/******** エフェクト描画 **********/
 		for (int i = 0; i < maxEffects; i++) {
 			if (!effect[i].isEnd) {
@@ -422,6 +445,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				);
 			}
 		}
+
+		Novice::SetBlendMode(kBlendModeNormal);
 
 		/*********************************
 			描画処理ここまで

@@ -100,12 +100,12 @@ int IntEaseOut(float t, long int b, long int c) {
 
 unsigned int ColorEasing(float t, unsigned int startColor, unsigned int endColor) {
 
-	unsigned int red = IntEaseIn(t, (((startColor & 0xFF000000) >> 24) & 0xFF), (((endColor & 0xFF000000) >> 24) & 0xFF));
-	unsigned int green = IntEaseIn(t, (((startColor & 0x00FF0000) >> 16) & 0xFF), (((endColor & 0x00FF0000) >> 16) & 0xFF));
-	unsigned int blue = IntEaseIn(t, (((startColor & 0x0000FF00) >> 8) & 0xFF), (((endColor & 0x0000FF00) >> 8) & 0xFF));
-	unsigned int alpha = IntEaseIn(t, (((startColor & 0x000000FF)) & 0xFF), (((endColor & 0x000000FF)) & 0xFF));
+	unsigned int red = IntEaseOut(t, (((startColor & 0xFF000000) >> 24) & 0xFF), (((endColor & 0xFF000000) >> 24) & 0xFF));
+	unsigned int green = IntEaseOut(t, (((startColor & 0x00FF0000) >> 16) & 0xFF), (((endColor & 0x00FF0000) >> 16) & 0xFF));
+	unsigned int blue = IntEaseOut(t, (((startColor & 0x0000FF00) >> 8) & 0xFF), (((endColor & 0x0000FF00) >> 8) & 0xFF));
+	unsigned int alpha = IntEaseOut(t, (((startColor & 0x000000FF)) & 0xFF), (((endColor & 0x000000FF)) & 0xFF));
 
-	unsigned int color = IntEaseIn(t, (startColor & 0xFF), (endColor & 0xFF));
+	unsigned int color = IntEaseOut(t, (startColor & 0xFF), (endColor & 0xFF));
 	return (red << 24) + (green << 16) + (blue << 8) + alpha;
 
 }

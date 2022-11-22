@@ -24,7 +24,7 @@
 const char kWindowTitle[] = "エフェクト";
 
 /******** ウィンドウサイズの指定 **********/
-const int kWinodowWidth = 1280; //x
+const int kWindowWidth = 1280; //x
 const int kWindowHeight = 720; //y
 
 /*********************************
@@ -249,7 +249,7 @@ void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantit
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// ライブラリの初期化
-	Novice::Initialize(kWindowTitle, kWinodowWidth, kWindowHeight);
+	Novice::Initialize(kWindowTitle, kWindowWidth, kWindowHeight);
 
 	// キー入力結果を受け取る箱
 	char keys[256] = { 0 };
@@ -358,6 +358,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/*********************************
 			描画処理ここから
 		*********************************/
+
+		Novice::DrawQuad(
+			0, 0,
+			kWindowWidth, 0,
+			0, kWindowHeight,
+			kWindowWidth, kWindowHeight,
+			0, 0,
+			1, 1,
+			sampleTexture,
+			BLACK
+		);
 
 		Novice::DrawQuad(
 			object.position.x - object.radius.x / 2,

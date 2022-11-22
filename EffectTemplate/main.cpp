@@ -196,7 +196,7 @@ unsigned int ColorEasing(float t, unsigned int startColor, unsigned int endColor
 /******** エフェクト更新処理 **********/
 void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantity) {
 	if (effect.init == true) {
-		
+
 		effect.nextFrame = 10;
 
 		effect.point = {
@@ -209,7 +209,7 @@ void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantit
 		//位置等を初期化
 		effect.position = { My::RandomF(50.0f, kWindowWidth - 50.0f, 1), My::RandomF(50.0f, kWindowHeight - 50.0f, 1) };
 		effect.startPosition = { effect.position.x, effect.position.y };
-		effect.endPosition = { effect.position.x - My::RandomF(200, 300, 1), effect.position.y};
+		effect.endPosition = { effect.position.x - My::RandomF(200, 300, 1), effect.position.y };
 
 		effect.size = { My::RandomF(8.5f, 10.5f, 0), effect.size.x };
 		effect.startSize = { effect.size.x, effect.size.x };
@@ -264,11 +264,11 @@ void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantit
 			effect.colorTime += 0.01f;
 			effect.color = ColorEasing(effect.colorTime, 0x9effce00, 0xb7ffff55);
 		}
-		else if(effect.colorTime < 1.0f && effect.fade == true) {
+		else if (effect.colorTime < 1.0f && effect.fade == true) {
 			effect.colorTime += 0.01f;
 			effect.color = ColorEasing(effect.colorTime, 0xb7ffff55, 0x9effce00);
 		}
-		else if(effect.colorTime > 1.0f && effect.fade == false) {
+		else if (effect.colorTime > 1.0f && effect.fade == false) {
 			effect.fade = true;
 			effect.colorTime = 0.0f;
 		}

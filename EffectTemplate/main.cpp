@@ -193,7 +193,7 @@ void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantit
 		effect.startPosition = { effect.position.x, effect.position.y };
 		effect.endPosition = { effect.position.x - My::RandomF(200, 300, 1), effect.position.y};
 
-		effect.size = { My::RandomF(5.0f, 7.5f, 0), effect.size.x };
+		effect.size = { My::RandomF(8.5f, 10.5f, 0), effect.size.x };
 		effect.startSize = { effect.size.x, effect.size.x };
 
 		effect.strength = My::RandomF(60.0f, 90.0f, 0);

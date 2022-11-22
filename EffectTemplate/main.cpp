@@ -184,15 +184,17 @@ unsigned int ColorEasing(float t, unsigned int startColor, unsigned int endColor
 void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantity) {
 	if (effect.init == true) {
 		
-		effect.nextFrame = 30;
+		effect.nextFrame = 10;
 
 		//位置等を初期化
 		effect.position = { My::RandomF(0.0f, kWindowWidth, 1), My::RandomF(0.0f, kWindowHeight, 1) };
 		effect.startPosition = { effect.position.x, effect.position.y };
-		effect.endPosition = { effect.startPosition.x, effect.position.y};
+		effect.endPosition = { effect.position.x - My::RandomF(200, 300, 1), effect.position.y};
 
 		effect.size = { My::RandomF(5.0f, 7.5f, 0), effect.size.x };
 		effect.startSize = { effect.size.x, effect.size.x };
+
+		
 
 		effect.time = 0.0f;
 
@@ -224,17 +226,14 @@ void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantit
 
 	}
 
-	if (effect.elapseFrame == 90) {
-		effectQuantity = 0;
-	}
-
 	if (effect.isEnd == false) {
 
 		//粒子エフェクトのイージング処理
 		effect.time += 0.01f;
 		if (effect.time < 1.0f) {
 
-
+			effect.position.x = easeInOut(effect.time, effect.startPosition.x, effect.endPosition.x);
+			effect.color = ColorEasing(effect.time, 0xFFFFFFDD, 0xFFFFFF00);
 
 		}
 		else {

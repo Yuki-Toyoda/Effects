@@ -104,7 +104,7 @@ void EffectUpdate(Effect& generateEffect, Object& object, bool& next, float& add
 		generateEffect.startPosition = { generateEffect.position.x, generateEffect.position.y };
 
 		//終端位置の設定
-		generateEffect.endPosition = { object.position.x, object.position.y - object.radius.y + object.offset };
+		generateEffect.endPosition = { My::RandomF(object.position.x - object.radius.x, object.position.x + object.radius.x, 1), object.position.y - object.radius.y + object.offset };
 
 		//パーティクルサイズの設定
 		generateEffect.size = { My::RandomF(10.0f, 12.5f, 0), generateEffect.size.x };

@@ -57,8 +57,6 @@ struct Quad {
 //init ... 初期化
 //isEnd ... エフェクトが終了しているか
 struct Effect {
-	Quad rotate;
-	Quad point;
 	Vector2D position;
 	Vector2D startPosition;
 	Vector2D endPosition;
@@ -76,9 +74,6 @@ struct Effect {
 	float colorTime;
 	float easeTime;
 	unsigned int color;
-
-	int degree;
-	float rotateTheta;
 
 	bool fade;
 	bool init;
@@ -197,34 +192,39 @@ unsigned int ColorEasing(float t, unsigned int startColor, unsigned int endColor
 }
 
 /******** エフェクト更新処理 **********/
-void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantity) {
+void EffectUpdate(Effect& effect, Object& object, bool& next) {
 	if (effect.init == true) {
 
 		effect.nextFrame = 10;
 
-		effect.point = {
-			{ -effect.size.x, -effect.size.y},
-			{effect.size.x, -effect.size.y},
-			{-effect.size.x, effect.size.y},
-			{effect.size.x, effect.size.y}
-		};
-
 		//位置等を初期化
+
+		//エフェクト発生位置
 		effect.position = { My::RandomF(50.0f, kWindowWidth - 50.0f, 1), My::RandomF(50.0f, kWindowHeight - 50.0f, 1) };
 		effect.startPosition = { effect.position.x, effect.position.y };
+
+		//エフェクト終端位置
 		effect.endPosition = { effect.position.x - My::RandomF(200, 300, 1), effect.position.y };
 
+		//エフェクトサイズ
 		effect.size = { My::RandomF(8.5f, 10.5f, 0), effect.size.x };
 		effect.startSize = { effect.size.x, effect.size.x };
 
+		//エフェクト振幅
 		effect.strength = My::RandomF(60.0f, 90.0f, 0);
 		effect.startStrength = effect.strength;
 		effect.amplitude = 0.05f;
 
-		effect.time = 0.0f;
-
+		//次のパーティクルを生成しないようにする
 		next = false;
 
+
+		//イージング変数
+
+		//座標用
+		effect.time = 0.0f;
+
+		//色用
 		effect.colorTime = 0.0f;
 		effect.fade = false;
 
@@ -246,10 +246,9 @@ void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantit
 
 	}
 
+	//一定フレーム経過したら次のパーティクルを生成する
 	if (effect.elapseFrame == effect.nextFrame) {
-
 		next = true;
-
 	}
 
 	if (effect.isEnd == false) {
@@ -257,21 +256,28 @@ void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantit
 		//粒子エフェクトのイージング処理
 		effect.time += 0.005f;
 		if (effect.time < 1.0f) {
+			//座標
 			effect.position.x = easeInOut(effect.time, effect.startPosition.x, effect.endPosition.x);
 		}
 		else {
+			//一定秒数超えたら時間を固定
 			effect.time = 1.0f;
 		}
 
+		//粒子エフェクトの色とサイズを変更
 		if (effect.colorTime < 1.0f && effect.fade == false) {
 			effect.colorTime += 0.01f;
 			effect.color = ColorEasing(effect.colorTime, 0x9effce00, 0xb7ffff55);
+			effect.size.x = easeOut(effect.time, 0.0f, effect.startSize.x);
+			effect.size.y = easeOut(effect.time, 0.0f, effect.startSize.y);
 		}
 		else if (effect.colorTime < 1.0f && effect.fade == true) {
 			effect.colorTime += 0.01f;
 			effect.color = ColorEasing(effect.colorTime, 0xb7ffff55, 0x9effce00);
+			effect.size.x = easeIn(effect.time, effect.startSize.x, 0.0f);
+			effect.size.y = easeIn(effect.time, effect.startSize.y, 0.0f);
 		}
-		else if (effect.colorTime > 1.0f && effect.fade == false) {
+		else if (effect.colorTime >= 1.0f && effect.fade == false) {
 			effect.fade = true;
 			effect.colorTime = 0.0f;
 		}
@@ -279,6 +285,7 @@ void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantit
 			effect.colorTime = 1.0f;
 		}
 
+		//粒子エフェクトを上下に漂わせる
 		effect.theta += M_PI / effect.strength;
 		effect.position.y += sinf(effect.theta);
 
@@ -314,7 +321,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	/******** エフェクト関係 **********/
 
 	int effectQuantity = 0;
-	bool next = false;
+	bool next = true;
 
 	int mousePosX = 0;
 	int mousePosY = 0;
@@ -323,14 +330,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Effect effect[maxEffects];
 	for (int i = 0; i < maxEffects; i++) {
 		effect[i] = {
-			{{0.0f, 0.0f},
-			{0.0f, 0.0f},
-			{0.0f, 0.0f},
-			{0.0f, 0.0f}},
-			{{0.0f, 0.0f},
-			{0.0f, 0.0f},
-			{0.0f, 0.0f},
-			{0.0f, 0.0f}},
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
 			{0.0f, 0.0f},
@@ -348,8 +347,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			0.0f,
 			0.0f,
 			0xFFFFFFFF,
-			0,
-			0.0f,
 			false,
 			false,
 			true
@@ -396,20 +393,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 		}
 
-		if (object.radius.x > 0) {
-			object.radius.x -= object.velocity;
-			object.radius.y -= object.velocity;
-			object.velocity += object.acceleration;
-		}
-		else {
-			object.radius.x = 0;
-		}
-
 		for (int i = 0; i < maxEffects; i++) {
-			EffectUpdate(effect[i], object, next, effectQuantity);
+			EffectUpdate(effect[i], object, next);
 		}
-
-		Novice::ScreenPrintf(0, 10, "Quantity : %d", effectQuantity);
 
 		/*********************************
 			更新処理ここまで
@@ -456,17 +442,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		for (int i = 0; i < maxEffects; i++) {
 			if (!effect[i].isEnd) {
 				Novice::DrawQuad(
-					effect[i].rotate.q1.x,
-					effect[i].rotate.q1.y,
+					effect[i].position.x - effect[i].size.x,
+					effect[i].position.y - effect[i].size.y,
 
-					effect[i].rotate.q2.x,
-					effect[i].rotate.q2.y,
+					effect[i].position.x + effect[i].size.x,
+					effect[i].position.y - effect[i].size.y,
 
-					effect[i].rotate.q3.x,
-					effect[i].rotate.q3.y,
+					effect[i].position.x - effect[i].size.x,
+					effect[i].position.y + effect[i].size.y,
 
-					effect[i].rotate.q4.x,
-					effect[i].rotate.q4.y,
+					effect[i].position.x + effect[i].size.x,
+					effect[i].position.y + effect[i].size.y,
 
 					0, 0,
 					32, 32,

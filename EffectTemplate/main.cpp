@@ -77,6 +77,9 @@ struct Effect {
 	float easeTime;
 	unsigned int color;
 
+	int degree;
+	float rotateTheta;
+
 	bool fade;
 	bool init;
 	bool isEnd;
@@ -345,6 +348,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			0.0f,
 			0.0f,
 			0xFFFFFFFF,
+			0,
+			0.0f,
 			false,
 			false,
 			true

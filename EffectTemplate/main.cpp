@@ -63,7 +63,10 @@ struct Effect {
 	float elapseFrame;
 	float time;
 	float easeTime;
-	unsigned int color;
+	unsigned int colorR;
+	unsigned int colorG;
+	unsigned int colorB;
+	unsigned int colorAlpha;
 
 	bool init;
 	bool isEnd;
@@ -88,7 +91,18 @@ const int maxEffects = 50;
 	関数宣言ここから
 *********************************/
 
+int clamp(long int number, long int min, long int max) {
 
+	if (number > max) {
+		return number = max;
+	}
+	else if (number < min) {
+		return number = min;
+	}
+	else {
+		return number;
+	}
+}
 
 int IntEaseIn(float& t, long int b, long int c) {
 	return c* t* t* b;
@@ -96,10 +110,10 @@ int IntEaseIn(float& t, long int b, long int c) {
 
 unsigned int ColorEasing(float& t, unsigned int startColor, unsigned int endColor) {
 
-	unsigned int red = IntEaseIn(t, (startColor & 0xFF000000) 1.0f)
+	unsigned int color = IntEaseIn(t, (startColor & 0xFF), (endColor - startColor & 0xFF));
+	return color;
 
 }
-
 /******** エフェクト更新処理 **********/
 void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantity) {
 	if (effect.init == true) {
@@ -155,8 +169,18 @@ void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantit
 	if (effect.isEnd == false) {
 
 		//粒子エフェクトのイージング処理
-		effect.time += 0.01f;
-		effect.easeTime = 1.0f - powf(1.0f - effect.time, 3.0f);
+		
+		if (effect.time < 1.0f) {
+			effect.time += 0.01f;
+			/*effect.colorR = ColorEasing(effect.time, 0xFF, 0xFF);
+			effect.colorG = ColorEasing(effect.time, 0xFF, 0xFF);
+			effect.colorB = ColorEasing(effect.time, 0xFF, 0xFF);
+			effect.colorAlpha = ColorEasing(effect.time, 0xFF, 0xFF);*/
+			
+		}
+		else {
+			effect.time = 1.0f;
+		}
 
 		//経過フレーム加算
 		effect.elapseFrame += 1.0f;
@@ -215,6 +239,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			0.0f,
 			0.0f,
 			0xFF,
+			0xFF,
+			0xFF,
+			0xFF,
 			false,
 			true
 		};
@@ -272,9 +299,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		for (int i = 0; i < maxEffects; i++) {
 			EffectUpdate(effect[i], object, next, effectQuantity);
 		}
-
-		Novice::ScreenPrintf(0, 10, "Quantity : %d", effectQuantity);
-
 		/*********************************
 			更新処理ここまで
 		*********************************/
@@ -323,10 +347,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					32, 32,
 
 					circleTexture,
-					effect[i].color
+					(effect[i].colorR << 24) + (effect[i].colorG << 16) + (effect[i].colorB << 8) + effect[i].colorAlpha
 				);
 			}
 		}
+
+		Novice::ScreenPrintf(0, 10, "color : %x", (effect[0].colorR << 24) + (effect[0].colorG << 16) + (effect[0].colorB << 8) + effect[0].colorAlpha);
+		Novice::ScreenPrintf(0, 30, "colorR : %x", (effect[0].colorR << 24));
+		Novice::ScreenPrintf(0, 50, "colorG : %x",(effect[0].colorG << 16));
+		Novice::ScreenPrintf(0, 70, "colorB : %x", (effect[0].colorB << 8));
+		Novice::ScreenPrintf(0, 90, "colorA : %x", effect[0].colorAlpha);
 
 		/*********************************
 			描画処理ここまで

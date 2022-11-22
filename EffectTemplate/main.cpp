@@ -299,6 +299,29 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		*********************************/
 
 		Novice::DrawQuad(
+
+			0,
+			0,
+
+			kWinodowWidth,
+			0,
+
+			0,
+			kWindowHeight,
+
+			kWinodowWidth,
+			kWindowHeight,
+
+			0, 0,
+
+			1, 1,
+
+			sampleTexture,
+			BLACK
+
+		);
+
+		Novice::DrawQuad(
 			object.position.x - object.radius.x,
 			object.position.y - object.radius.y + object.offset,
 
@@ -317,6 +340,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			sampleTexture,
 			RED
 		);
+
+		Novice::SetBlendMode(kBlendModeAdd);
 
 		/******** エフェクト描画 **********/
 		for (int i = 0; i < maxEffects; i++) {
@@ -342,6 +367,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				);
 			}
 		}
+
+		Novice::SetBlendMode(kBlendModeNormal);
 
 		/*********************************
 			描画処理ここまで

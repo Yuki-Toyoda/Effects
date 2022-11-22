@@ -93,7 +93,7 @@ const int maxEffects = 50;
 	関数宣言ここから
 *********************************/
 
-int IntEaseIn(float t, long int b, long int c) {
+int IntEaseOut(float t, long int b, long int c) {
 	float easeT = 1.0f - powf(1.0f - t, 3.0f);
 	return (1.0f - easeT) * b + easeT * c;
 }

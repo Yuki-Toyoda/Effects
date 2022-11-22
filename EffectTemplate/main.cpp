@@ -63,6 +63,7 @@ struct Effect {
 	float elapseFrame;
 	float time;
 	float easeTime;
+	unsigned int color;
 	unsigned int colorR;
 	unsigned int colorG;
 	unsigned int colorB;
@@ -105,13 +106,19 @@ int clamp(long int number, long int min, long int max) {
 }
 
 int IntEaseIn(float& t, long int b, long int c) {
-	return c* t* t* b;
+	float easeT = 1.0f - powf(1.0f - t, 3.0f);
+	return (1.0f - easeT) * b + easeT * c;
 }
 
 unsigned int ColorEasing(float& t, unsigned int startColor, unsigned int endColor) {
 
-	unsigned int color = IntEaseIn(t, (startColor & 0xFF), (endColor - startColor & 0xFF));
-	return color;
+	unsigned int red = IntEaseIn(t, (((startColor & 0xFF000000) >> 24) & 0xFF), (((endColor & 0xFF000000) >> 24) & 0xFF));
+	unsigned int green = IntEaseIn(t, (((startColor & 0x00FF0000) >> 16) & 0xFF), (((endColor & 0x00FF0000) >> 16) & 0xFF));
+	unsigned int blue = IntEaseIn(t, (((startColor & 0x0000FF00) >> 8) & 0xFF), (((endColor & 0x0000FF00) >> 8) & 0xFF));
+	unsigned int alpha = IntEaseIn(t, (((startColor & 0x000000FF)) & 0xFF), (((endColor & 0x000000FF)) & 0xFF));
+
+	unsigned int color = IntEaseIn(t, (startColor & 0xFF), (endColor & 0xFF));
+	return (red << 24) + (green << 16) + (blue << 8) + alpha;
 
 }
 /******** エフェクト更新処理 **********/
@@ -125,7 +132,7 @@ void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantit
 		effect.startPosition = { effect.position.x, effect.position.y };
 		effect.endPosition = { effect.startPosition.x, effect.position.y - My::RandomF(200.0f, 300.0f, 1) };
 
-		effect.size = { My::RandomF(5.0f, 7.5f, 0), effect.size.x };
+		effect.size = { My::RandomF(10.0f, 15.0f, 0), effect.size.x };
 		effect.startSize = { effect.size.x, effect.size.x };
 
 		effect.strength = My::RandomF(60.0f, 100.0f, 0);
@@ -172,10 +179,7 @@ void EffectUpdate(Effect& effect, Object& object, bool& next, int& effectQuantit
 		
 		if (effect.time < 1.0f) {
 			effect.time += 0.01f;
-			/*effect.colorR = ColorEasing(effect.time, 0xFF, 0xFF);
-			effect.colorG = ColorEasing(effect.time, 0xFF, 0xFF);
-			effect.colorB = ColorEasing(effect.time, 0xFF, 0xFF);
-			effect.colorAlpha = ColorEasing(effect.time, 0xFF, 0xFF);*/
+			effect.color = ColorEasing(effect.time, 0xFFFFFFFF, 0xFF7F7F00);
 			
 		}
 		else {
@@ -242,6 +246,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			0xFF,
 			0xFF,
 			0xFF,
+			0xFF,
 			false,
 			true
 		};
@@ -287,14 +292,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 		}
 
-		if (object.radius.x > 0) {
+		/*if (object.radius.x > 0) {
 			object.radius.x -= object.velocity;
 			object.radius.y -= object.velocity;
 			object.velocity += object.acceleration;
 		}
 		else {
 			object.radius.x = 0;
-		}
+		}*/
 
 		for (int i = 0; i < maxEffects; i++) {
 			EffectUpdate(effect[i], object, next, effectQuantity);
@@ -347,7 +352,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					32, 32,
 
 					circleTexture,
-					(effect[i].colorR << 24) + (effect[i].colorG << 16) + (effect[i].colorB << 8) + effect[i].colorAlpha
+					effect[i].color
 				);
 			}
 		}

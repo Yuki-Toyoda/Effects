@@ -6,9 +6,6 @@
 #include <MyFunc.h>
 #include <Vector2D.h>
 
-#include <iostream>
-#include <algorithm>
-
 /*================================
 	コピペ用↓
 =================================*/
@@ -141,7 +138,7 @@ float Ease_In(float t, float b, float c, float d) {
 // b ... プロパティの初めの値
 // c ... プロパティの初めの値と終わりの値との差(変化量)
 // d ... アニメーションの時間（秒）
-int IntEase_In(float t, long int b, long int c, float d) {
+int IntEase_In(float& t, long int b, long int c, float d) {
 	t /= d;
 	return c * t * t + b;
 }
@@ -168,7 +165,7 @@ float Ease_InOut(float t, float b, float c, float d) {
 	return -c / 2.0 * (cosf(M_PI * t / d) - 1) + b;
 }
 
-unsigned int ColorEasing(float t, unsigned int startColor, unsigned int endColor, float d) {
+unsigned int ColorEasing(float& t, unsigned int startColor, unsigned int endColor, float d) {
 	
 	unsigned int color = IntEase_In(t, (startColor & 0xFF), ((endColor - startColor) & 0xFF), d);
 
